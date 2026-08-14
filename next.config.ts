@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    turbo: false,
-  },
   // Deshabilitar Turbopack para evitar problemas con pg
   webpack: (config) => {
     config.externals = [...(config.externals || []), 'pg-native'];
