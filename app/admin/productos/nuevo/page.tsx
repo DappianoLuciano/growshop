@@ -1,0 +1,531 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { ArrowLeft, Save, Upload, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
+
+const categoryFields: Record<string, string[]> = {
+  'fertilizantes': ['capacity'],
+  'iluminacion': ['power'],
+  'sustratos': ['capacity', 'size'],
+  'macetas': ['size', 'capacity'],
+  'ventilacion': ['power', 'size'],
+  'medicion': [],
+}
+
+export default function NuevoProductoPage() {
+  const router = useRouter()
+  const [categories, setCategories] = useState<Category[]>([])
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: '' as string | number,
+    isOnSale: false,
+    salePrice: '' as string | number,
+    stock: '' as string | number,
+    marca: '',
+    sku: '',
+    categoryId: '',
+    isActive: true,
+    // Características según categoría
+    capacity: '',
+    size: '',
+    power: '',
+  })
+
+  const [images, setImages] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/admin/categories')
+      if (response.ok) {
+        const data = await response.json()
+        setCategories(data)
+      }
+    } catch (error) {
+      console.error('Error al cargar categorías:', error)
+    }
+  }
+
+  const selectedCategory = categories.find(c => c.id === formData.categoryId)
+  const selectedCategoryFields = selectedCategory ? categoryFields[selectedCategory.slug] || [] : []
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploading(true)
+    setError('')
+
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!response.ok) {
+          throw new Error('Error al subir imagen')
+        }
+
+        const data = await response.json()
+        return data.url
+      })
+
+      const uploadedUrls = await Promise.all(uploadPromises)
+      setImages(prev => [...prev, ...uploadedUrls])
+    } catch (err: any) {
+      console.error('Error:', err)
+      setError('Error al subir imágenes: ' + err.message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    // Validar precio de oferta
+    if (formData.isOnSale && formData.salePrice) {
+      const price = parseFloat(formData.price.toString()) || 0
+      const salePrice = parseFloat(formData.salePrice.toString()) || 0
+      if (salePrice >= price) {
+        setError('El precio de oferta debe ser menor que el precio original')
+        setLoading(false)
+        return
+      }
+    }
+
+    try {
+      // Convertir price y stock a números y agregar imágenes
+      const dataToSend = {
+        ...formData,
+        price: parseFloat(formData.price.toString()) || 0,
+        salePrice: formData.salePrice ? parseFloat(formData.salePrice.toString()) : null,
+        stock: parseInt(formData.stock.toString()) || 0,
+        images: images.map((url, index) => ({
+          url,
+          alt: formData.name,
+          order: index,
+        })),
+      }
+
+      const response = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Error del servidor:', errorData)
+
+        // Mejorar mensaje de error para SKU duplicado
+        if (errorData.details?.includes('Unique constraint') && errorData.details?.includes('sku')) {
+          throw new Error('El SKU ya existe. Por favor usá uno diferente.')
+        }
+
+        throw new Error(errorData.details || errorData.error || 'Error al guardar producto')
+      }
+
+      const product = await response.json()
+      console.log('✅ Producto creado:', product)
+
+      // Redirigir a la lista de productos
+      router.push('/admin/productos')
+    } catch (err: any) {
+      console.error('Error:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="p-6 md:p-8">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <Link
+          href="/admin/productos"
+          className="p-2 text-gray-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </Link>
+        <div>
+          <h1 className="text-3xl font-black text-white mb-2">Nuevo Producto</h1>
+          <p className="text-gray-400">Creá un nuevo producto para tu catálogo</p>
+        </div>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl">
+          <p className="text-red-400 text-sm">{error}</p>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Columna principal */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Información básica */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-white mb-6">Información Básica</h2>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label htmlFor="name" className="block text-sm font-semibold text-gray-300 mb-2">
+                      Nombre del Producto *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all"
+                      placeholder="Ej: Fertilizante Orgánico"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="marca" className="block text-sm font-semibold text-gray-300 mb-2">
+                      Marca *
+                    </label>
+                    <input
+                      type="text"
+                      id="marca"
+                      value={formData.marca}
+                      onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all"
+                      placeholder="Ej: GrowMax"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="sku" className="block text-sm font-semibold text-gray-300 mb-2">
+                      SKU (Código) *
+                    </label>
+                    <input
+                      type="text"
+                      id="sku"
+                      value={formData.sku}
+                      onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all"
+                      placeholder="FERT-001"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="price" className="block text-sm font-semibold text-gray-300 mb-2">
+                      Precio {formData.isOnSale ? 'Original' : ''} *
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                      <input
+                        type="number"
+                        id="price"
+                        value={formData.price}
+                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                        className="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all"
+                        placeholder="0.00"
+                        min="0"
+                        step="0.01"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="stock" className="block text-sm font-semibold text-gray-300 mb-2">
+                      Stock Disponible *
+                    </label>
+                    <input
+                      type="number"
+                      id="stock"
+                      value={formData.stock}
+                      onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all"
+                      placeholder="0"
+                      min="0"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Oferta Section */}
+                <div className="pt-4 border-t border-gray-700">
+                  <label className="flex items-center gap-3 cursor-pointer mb-4">
+                    <input
+                      type="checkbox"
+                      checked={formData.isOnSale}
+                      onChange={(e) => setFormData({ ...formData, isOnSale: e.target.checked })}
+                      className="w-5 h-5 accent-yellow-500"
+                    />
+                    <div>
+                      <p className="text-white font-semibold">En Oferta 🔥</p>
+                      <p className="text-xs text-gray-400">Mostrar este producto en ofertas</p>
+                    </div>
+                  </label>
+
+                  {formData.isOnSale && (
+                    <div>
+                      <label htmlFor="salePrice" className="block text-sm font-semibold text-yellow-400 mb-2">Precio de Oferta *</label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-400">$</span>
+                        <input
+                          type="number"
+                          id="salePrice"
+                          value={formData.salePrice}
+                          onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                          className="w-full pl-8 pr-4 py-3 bg-gray-800 border border-yellow-500/50 rounded-xl text-yellow-400 placeholder-yellow-500/30 focus:outline-none focus:border-yellow-500 transition-all"
+                          min="0"
+                          step="0.01"
+                          placeholder="0.00"
+                          required={formData.isOnSale}
+                        />
+                      </div>
+                      {formData.price && formData.salePrice && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Descuento: {Math.round(((Number(formData.price) - Number(formData.salePrice)) / Number(formData.price)) * 100)}%
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="description" className="block text-sm font-semibold text-gray-300 mb-2">
+                    Descripción
+                  </label>
+                  <textarea
+                    id="description"
+                    value={formData.description || ''}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={4}
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all resize-none"
+                    placeholder="Descripción detallada del producto..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Características según categoría */}
+            {selectedCategory && selectedCategoryFields.length > 0 && (
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-white mb-4">Características</h2>
+                <p className="text-sm text-gray-400 mb-6">
+                  Campos específicos para {selectedCategory.name}
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedCategoryFields.includes('capacity') && (
+                    <div>
+                      <label htmlFor="capacity" className="block text-sm font-semibold text-gray-300 mb-2">
+                        Capacidad
+                      </label>
+                      <input
+                        type="text"
+                        id="capacity"
+                        value={formData.capacity}
+                        onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all"
+                        placeholder="Ej: 1L, 500ml, 5kg"
+                      />
+                    </div>
+                  )}
+
+                  {selectedCategoryFields.includes('size') && (
+                    <div>
+                      <label htmlFor="size" className="block text-sm font-semibold text-gray-300 mb-2">
+                        Tamaño
+                      </label>
+                      <input
+                        type="text"
+                        id="size"
+                        value={formData.size}
+                        onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all"
+                        placeholder="Ej: 20x20cm, M, L"
+                      />
+                    </div>
+                  )}
+
+                  {selectedCategoryFields.includes('power') && (
+                    <div className="md:col-span-2">
+                      <label htmlFor="power" className="block text-sm font-semibold text-gray-300 mb-2">
+                        Potencia
+                      </label>
+                      <input
+                        type="text"
+                        id="power"
+                        value={formData.power}
+                        onChange={(e) => setFormData({ ...formData, power: e.target.value })}
+                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all"
+                        placeholder="Ej: 600W, 1000W"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Categoría */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h2 className="text-lg font-bold text-white mb-4">Categoría</h2>
+              <select
+                value={formData.categoryId}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-green-500 transition-all"
+                required
+              >
+                <option value="">Seleccionar categoría *</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-2">
+                Las características específicas aparecerán según la categoría
+              </p>
+            </div>
+
+            {/* Imágenes */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h2 className="text-lg font-bold text-white mb-4">Imágenes del Producto</h2>
+              <div className="space-y-4">
+                {/* Grid de imágenes */}
+                {images.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {images.map((url, index) => (
+                      <div key={index} className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden group">
+                        <img src={url} alt={`Imagen ${index + 1}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                        {index === 0 && (
+                          <div className="absolute bottom-2 left-2 px-2 py-1 bg-green-500 text-white text-xs font-semibold rounded">
+                            Principal
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload Button */}
+                <label className="block">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                  <div className="px-4 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-white text-sm text-center cursor-pointer transition-all">
+                    {uploading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Subiendo...
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2">
+                        <Upload className="w-4 h-4" />
+                        {images.length === 0 ? 'Subir Imágenes' : 'Agregar Más Imágenes'}
+                      </div>
+                    )}
+                  </div>
+                </label>
+
+                <p className="text-xs text-gray-500">
+                  Podés subir múltiples imágenes. La primera será la principal.
+                </p>
+              </div>
+            </div>
+
+            {/* Estado */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h2 className="text-lg font-bold text-white mb-4">Estado</h2>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  className="w-5 h-5 accent-green-500"
+                />
+                <div>
+                  <p className="text-white font-semibold">Producto activo</p>
+                  <p className="text-xs text-gray-400">Visible en la tienda</p>
+                </div>
+              </label>
+            </div>
+
+            {/* Acciones */}
+            <div className="space-y-3">
+              <button
+                type="submit"
+                disabled={loading || uploading}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    Guardar Producto
+                  </>
+                )}
+              </button>
+              <Link
+                href="/admin/productos"
+                className="block w-full py-3 border-2 border-gray-700 text-gray-300 font-semibold text-center rounded-xl hover:border-gray-600 transition-all"
+              >
+                Cancelar
+              </Link>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  )
+}

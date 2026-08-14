@@ -1,0 +1,372 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+
+  /* GrowShop Brand Colors */
+  --grow-green: #4ade80;
+  --grow-green-dark: #22c55e;
+  --grow-earth: #92400e;
+  --grow-earth-light: #a8a29e;
+  --grow-white: #ffffff;
+  --grow-gray-light: #f5f5f4;
+  --grow-gray-border: #e7e5e4;
+  --grow-text: #1c1917;
+  --grow-text-light: #78716c;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* GrowShop Custom Colors */
+  --color-grow-green: var(--grow-green);
+  --color-grow-green-dark: var(--grow-green-dark);
+  --color-grow-earth: var(--grow-earth);
+  --color-grow-earth-light: var(--grow-earth-light);
+  --color-grow-white: var(--grow-white);
+  --color-grow-gray-light: var(--grow-gray-light);
+  --color-grow-gray-border: var(--grow-gray-border);
+  --color-grow-text: var(--grow-text);
+  --color-grow-text-light: var(--grow-text-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: #000000;
+  color: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+html {
+  background: #000000;
+}
+
+/* Estilos para select */
+select option:checked,
+select option:hover {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+select option {
+  background: #111111;
+  color: white;
+}
+
+/* ============= ANIMACIONES Y EFECTOS 3D ============= */
+
+/* Perspectiva para flip cards */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Animaciones de entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes float-delayed {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(20px);
+  }
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 1s ease-out;
+}
+
+.animate-slideDown {
+  animation: slideDown 0.8s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.8s ease-out 0.2s both;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
+/* Efectos hover y transiciones */
+.hover-lift {
+  transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* ============= EFECTOS ULTRA FLASHEROS ============= */
+
+/* Gradientes animados */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+.animate-gradient-x {
+  background-size: 200% auto;
+  animation: gradient-x 3s linear infinite;
+}
+
+/* Partículas flotantes */
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(50px) scale(0);
+    opacity: 0;
+  }
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(135deg, #10b981, #34d399);
+  border-radius: 50%;
+  animation: particle-float linear infinite;
+  box-shadow: 0 0 10px #10b981;
+}
+
+/* Grid pattern animado */
+.bg-grid-pattern {
+  background-image:
+    linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+@keyframes grid-flow {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(50px);
+  }
+}
+
+.animate-grid-flow {
+  animation: grid-flow 20s linear infinite;
+}
+
+/* Pulse lento */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Fade in con delays */
+.animate-fadeIn-delayed {
+  animation: fadeIn 1s ease-out 0.5s both;
+}
+
+.animate-fadeIn-delayed-2 {
+  animation: fadeIn 1s ease-out 1s both;
+}
+
+/* Texto con efecto neón */
+.neon-text-green {
+  text-shadow:
+    0 0 10px rgba(16, 185, 129, 0.8),
+    0 0 20px rgba(16, 185, 129, 0.6),
+    0 0 30px rgba(16, 185, 129, 0.4),
+    0 0 40px rgba(16, 185, 129, 0.2);
+}
+
+/* Botón con glow */
+.glow-button {
+  box-shadow:
+    0 0 20px rgba(16, 185, 129, 0.5),
+    0 0 40px rgba(16, 185, 129, 0.3),
+    inset 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.glow-button:hover {
+  box-shadow:
+    0 0 30px rgba(16, 185, 129, 0.8),
+    0 0 60px rgba(16, 185, 129, 0.5),
+    0 0 90px rgba(16, 185, 129, 0.3),
+    inset 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+.glow-button-big {
+  box-shadow:
+    0 0 30px rgba(16, 185, 129, 0.6),
+    0 0 60px rgba(16, 185, 129, 0.4),
+    inset 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* Ondas SVG */
+.wave-svg {
+  width: 100%;
+  height: 150px;
+  display: block;
+}
+
+@keyframes wave {
+  0% {
+    d: path("M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,122.7C1248,107,1344,85,1392,74.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z");
+  }
+  50% {
+    d: path("M0,160L48,144C96,128,192,96,288,96C384,96,480,128,576,133.3C672,139,768,117,864,112C960,107,1056,117,1152,133.3C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z");
+  }
+  100% {
+    d: path("M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,122.7C1248,107,1344,85,1392,74.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z");
+  }
+}
+
+.wave-path-1 {
+  animation: wave 10s ease-in-out infinite;
+}
+
+/* Efecto Matrix */
+.matrix-bg {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(16, 185, 129, 0.03) 0px,
+    rgba(16, 185, 129, 0.03) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  animation: matrix-rain 20s linear infinite;
+}
+
+@keyframes matrix-rain {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 1000px;
+  }
+}
+
+/* Drop shadow glow */
+.filter.drop-shadow-glow {
+  filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.8));
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Hover scale extremo */
+.hover-scale-extreme:hover {
+  transform: scale(1.2) rotate(2deg);
+}

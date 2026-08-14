@@ -1,0 +1,260 @@
+﻿'use client'
+
+import { useState, useEffect } from 'react'
+import { Package, Eye, Check, Loader2, Trash2 } from 'lucide-react'
+import Link from 'next/link'
+import ConfirmModal from '@/components/admin/ConfirmModal'
+
+interface Order {
+  id: string
+  orderNumber: string
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+  total: number
+  status: string
+  paymentStatus: string
+  shippingType: string
+  createdAt: string
+  items: any[]
+}
+
+export default function OrdenesAdminPage() {
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<string>('all')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [successModalOpen, setSuccessModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false)
+
+  useEffect(() => {
+    fetchOrders()
+  }, [])
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('/api/orders')
+      if (response.ok) {
+        const data = await response.json()
+        setOrders(data)
+      }
+    } catch (error) {
+      console.error('Error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const openApproveModal = (orderId: string) => {
+    setSelectedOrderId(orderId)
+    setModalOpen(true)
+  }
+
+  const openDeleteModal = (orderId: string) => {
+    setSelectedOrderId(orderId)
+    setDeleteModalOpen(true)
+  }
+
+  const handleApprovePayment = async () => {
+    if (!selectedOrderId) return
+
+    try {
+      const response = await fetch(`/api/orders/${selectedOrderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentStatus: 'APPROVED' }),
+      })
+
+      if (response.ok) {
+        fetchOrders()
+        setSuccessModalOpen(true)
+      }
+    } catch (error) {
+      console.error('Error al aprobar pago:', error)
+    }
+  }
+
+  const handleDeleteOrder = async () => {
+    if (!selectedOrderId) return
+
+    try {
+      const response = await fetch(`/api/orders/${selectedOrderId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        fetchOrders()
+        setDeleteSuccessModalOpen(true)
+      }
+    } catch (error) {
+      console.error('Error al eliminar orden:', error)
+    }
+  }
+
+  const filteredOrders = orders.filter(order => {
+    if (filter === 'all') return true
+    if (filter === 'pending') return order.paymentStatus === 'PENDING'
+    if (filter === 'approved') return order.paymentStatus === 'APPROVED'
+    return true
+  })
+
+  const getStatusBadge = (status: string) => {
+    const colors: any = {
+      PENDING: 'bg-yellow-500/20 text-yellow-400',
+      APPROVED: 'bg-green-500/20 text-green-400',
+      REJECTED: 'bg-red-500/20 text-red-400',
+    }
+    return colors[status] || 'bg-gray-500/20 text-gray-400'
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 md:p-8">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-6 h-6 text-green-500 animate-spin" />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-6 md:p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-black text-white mb-2">Órdenes</h1>
+          <p className="text-gray-400">Gestiona los pedidos de los clientes</p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-gray-900 border border-gray-800 rounded-xl">
+          <Package className="w-5 h-5 text-green-500" />
+          <span className="text-white font-bold">{orders.length}</span>
+          <span className="text-gray-400 text-sm">órdenes</span>
+        </div>
+      </div>
+
+      <div className="flex gap-2 mb-6">
+        <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-lg font-semibold transition-all ${filter === 'all' ? 'bg-green-500 text-white' : 'bg-gray-800 text-gray-300'}`}>
+          Todas
+        </button>
+        <button onClick={() => setFilter('pending')} className={`px-4 py-2 rounded-lg font-semibold transition-all ${filter === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-800 text-gray-300'}`}>
+          Pendientes
+        </button>
+        <button onClick={() => setFilter('approved')} className={`px-4 py-2 rounded-lg font-semibold transition-all ${filter === 'approved' ? 'bg-green-500 text-white' : 'bg-gray-800 text-gray-300'}`}>
+          Aprobadas
+        </button>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-800">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Orden</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Cliente</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Contacto</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Total</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Estado</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Fecha</th>
+                <th className="px-6 py-4 text-right text-sm font-bold text-gray-300">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400">No hay órdenes</td>
+                </tr>
+              ) : (
+                filteredOrders.map((order) => (
+                  <tr key={order.id} className="border-t border-gray-800 hover:bg-gray-800/50">
+                    <td className="px-6 py-4">
+                      <p className="font-mono text-sm text-white">{order.orderNumber}</p>
+                      <p className="text-xs text-gray-400">{order.items?.length || 0} items</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-white font-semibold">{order.customerName}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-gray-300">{order.customerPhone}</p>
+                      <p className="text-xs text-gray-400">{order.customerEmail}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-white font-bold">${parseFloat(order.total.toString()).toLocaleString('es-AR')}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(order.paymentStatus)}`}>
+                        {order.paymentStatus}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-gray-300">{new Date(order.createdAt).toLocaleDateString('es-AR')}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <Link href={`/admin/ordenes/${order.id}`} className="p-2 text-gray-400 hover:text-green-400">
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                        {order.paymentStatus === 'PENDING' && (
+                          <button onClick={() => openApproveModal(order.id)} className="p-2 text-gray-400 hover:text-green-500">
+                            <Check className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button onClick={() => openDeleteModal(order.id)} className="p-2 text-gray-400 hover:text-red-500">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <ConfirmModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onConfirm={handleApprovePayment}
+        title="Confirmar Pago"
+        message="¿Confirmar que el pago fue recibido? Esta acción descontará el stock de los productos."
+        confirmText="Aprobar Pago"
+        cancelText="Cancelar"
+        type="success"
+      />
+
+      <ConfirmModal
+        isOpen={successModalOpen}
+        onClose={() => setSuccessModalOpen(false)}
+        onConfirm={() => setSuccessModalOpen(false)}
+        title="¡Pago Aprobado!"
+        message="El pago fue aprobado exitosamente y el stock fue descontado."
+        confirmText="Entendido"
+        cancelText=""
+        type="success"
+      />
+
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteOrder}
+        title="Eliminar Orden"
+        message="¿Estás seguro de que deseas eliminar esta orden? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        type="danger"
+      />
+
+      <ConfirmModal
+        isOpen={deleteSuccessModalOpen}
+        onClose={() => setDeleteSuccessModalOpen(false)}
+        onConfirm={() => setDeleteSuccessModalOpen(false)}
+        title="Orden Eliminada"
+        message="La orden fue eliminada exitosamente."
+        confirmText="Entendido"
+        cancelText=""
+        type="success"
+      />
+    </div>
+  )
+}
