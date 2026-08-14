@@ -7,6 +7,8 @@ import { useSearchParams } from 'next/navigation'
 import ProductImageCarousel from '@/components/store/ProductImageCarousel'
 import { useCart } from '@/contexts/CartContext'
 
+export const dynamic = 'force-dynamic'
+
 interface Product {
   id: string
   name: string
