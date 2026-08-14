@@ -112,146 +112,240 @@ export default function ProductosAdminPage() {
         </div>
       </div>
 
-      {/* Products Table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-800">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Producto</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Categoría</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Precio</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Stock</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Estado</th>
-                <th className="px-6 py-4 text-right text-sm font-bold text-gray-300">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
-                    <div className="flex items-center justify-center gap-3">
-                      <Loader2 className="w-6 h-6 text-green-500 animate-spin" />
-                      <span className="text-gray-400">Cargando productos...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredProducts.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center">
-                        <Search className="w-8 h-8 text-gray-600" />
-                      </div>
-                      <div>
-                        <p className="text-white font-semibold mb-1">
-                          {searchQuery ? 'No se encontraron productos' : 'No hay productos'}
-                        </p>
-                        <p className="text-gray-400 text-sm">
-                          {searchQuery ? 'Intentá con otra búsqueda' : 'Creá tu primer producto para empezar'}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filteredProducts.map((product) => (
-                  <tr key={product.id} className="border-t border-gray-800 hover:bg-gray-800/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="relative w-12 h-12 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
-                          {product.images?.[0] ? (
-                            <Image
-                              src={product.images[0].url}
-                              alt={product.images[0].alt || product.name}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
-                              Sin img
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-white font-semibold">{product.name}</p>
-                          {product.brand && (
-                            <p className="text-gray-400 text-sm">{product.brand}</p>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-gray-300">
-                        {product.category?.name || 'Sin categoría'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      {product.isOnSale && product.salePrice ? (
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-400">Original:</span>
-                            <span className="text-sm text-gray-400">
-                              ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
-                            </span>
+      {/* Products List - Desktop Table / Mobile Cards */}
+      {loading ? (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-12">
+          <div className="flex items-center justify-center gap-3">
+            <Loader2 className="w-6 h-6 text-green-500 animate-spin" />
+            <span className="text-gray-400">Cargando productos...</span>
+          </div>
+        </div>
+      ) : filteredProducts.length === 0 ? (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-12">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center">
+              <Search className="w-8 h-8 text-gray-600" />
+            </div>
+            <div className="text-center">
+              <p className="text-white font-semibold mb-1">
+                {searchQuery ? 'No se encontraron productos' : 'No hay productos'}
+              </p>
+              <p className="text-gray-400 text-sm">
+                {searchQuery ? 'Intentá con otra búsqueda' : 'Creá tu primer producto para empezar'}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table */}
+          <div className="hidden lg:block bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-800">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Producto</th>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Categoría</th>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Precio</th>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Stock</th>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Estado</th>
+                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-300">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((product) => (
+                    <tr key={product.id} className="border-t border-gray-800 hover:bg-gray-800/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative w-12 h-12 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+                            {product.images?.[0] ? (
+                              <Image
+                                src={product.images[0].url}
+                                alt={product.images[0].alt || product.name}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
+                                Sin img
+                              </div>
+                            )}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-yellow-400">Oferta:</span>
-                            <span className="text-white font-semibold">
-                              ${parseFloat(product.salePrice.toString()).toLocaleString('es-AR')}
-                            </span>
-                            <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs font-bold rounded">
-                              -{Math.round(((parseFloat(product.price.toString()) - parseFloat(product.salePrice.toString())) / parseFloat(product.price.toString())) * 100)}%
-                            </span>
+                          <div>
+                            <p className="text-white font-semibold">{product.name}</p>
+                            {product.brand && (
+                              <p className="text-gray-400 text-sm">{product.brand}</p>
+                            )}
                           </div>
                         </div>
-                      ) : (
-                        <span className="text-white font-semibold">
-                          ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-gray-300">
+                          {product.category?.name || 'Sin categoría'}
                         </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`text-sm font-semibold ${
-                        getTotalStock(product) > 0 ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        {getTotalStock(product)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      </td>
+                      <td className="px-6 py-4">
+                        {product.isOnSale && product.salePrice ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-400">Original:</span>
+                              <span className="text-sm text-gray-400 line-through">
+                                ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-yellow-400">Oferta:</span>
+                              <span className="text-white font-semibold">
+                                ${parseFloat(product.salePrice.toString()).toLocaleString('es-AR')}
+                              </span>
+                              <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs font-bold rounded">
+                                -{Math.round(((parseFloat(product.price.toString()) - parseFloat(product.salePrice.toString())) / parseFloat(product.price.toString())) * 100)}%
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-white font-semibold">
+                            ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`text-sm font-semibold ${
+                          getTotalStock(product) > 0 ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {getTotalStock(product)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          product.isActive
+                            ? 'bg-green-500/20 text-green-400'
+                            : 'bg-gray-700 text-gray-400'
+                        }`}>
+                          {product.isActive ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={`/admin/productos/${product.id}`}
+                            className="p-2 text-gray-400 hover:text-green-400 transition-colors"
+                            title="Editar"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(product.id, product.name)}
+                            className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                            title="Eliminar"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="lg:hidden space-y-4">
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-green-500/50 transition-all"
+              >
+                <div className="flex gap-4 mb-4">
+                  <div className="relative w-20 h-20 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+                    {product.images?.[0] ? (
+                      <Image
+                        src={product.images[0].url}
+                        alt={product.images[0].alt || product.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
+                        Sin img
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-white font-semibold mb-1 truncate">{product.name}</h3>
+                    {product.brand && (
+                      <p className="text-gray-400 text-sm mb-2">{product.brand}</p>
+                    )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                         product.isActive
                           ? 'bg-green-500/20 text-green-400'
                           : 'bg-gray-700 text-gray-400'
                       }`}>
                         {product.isActive ? 'Activo' : 'Inactivo'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/admin/productos/${product.id}`}
-                          className="p-2 text-gray-400 hover:text-green-400 transition-colors"
-                          title="Editar"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(product.id, product.name)}
-                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                          title="Eliminar"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <span className="text-gray-400 text-xs">
+                        {product.category?.name || 'Sin categoría'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                  <div>
+                    <p className="text-gray-400 text-xs mb-1">Precio</p>
+                    {product.isOnSale && product.salePrice ? (
+                      <div className="space-y-1">
+                        <p className="text-gray-400 text-xs line-through">
+                          ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-white font-semibold">
+                            ${parseFloat(product.salePrice.toString()).toLocaleString('es-AR')}
+                          </p>
+                          <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs font-bold rounded">
+                            -{Math.round(((parseFloat(product.price.toString()) - parseFloat(product.salePrice.toString())) / parseFloat(product.price.toString())) * 100)}%
+                          </span>
+                        </div>
                       </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    ) : (
+                      <p className="text-white font-semibold">
+                        ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-xs mb-1">Stock</p>
+                    <p className={`font-semibold ${
+                      getTotalStock(product) > 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {getTotalStock(product)} unidades
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Link
+                    href={`/admin/productos/${product.id}`}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:scale-105 transition-all"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Editar
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(product.id, product.name)}
+                    className="px-4 py-2 bg-gray-800 hover:bg-red-500/20 text-gray-400 hover:text-red-500 rounded-lg transition-all"
+                    title="Eliminar"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Stats */}
       {!loading && products.length > 0 && (

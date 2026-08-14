@@ -3,12 +3,13 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Menu, LogOut } from 'lucide-react'
-import { useState } from 'react'
 import { signOut } from 'next-auth/react'
 
-export default function AdminHeader() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+interface AdminHeaderProps {
+  onMenuToggle?: () => void
+}
 
+export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/login' })
   }
@@ -20,8 +21,8 @@ export default function AdminHeader() {
           {/* Logo */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-gray-400 hover:text-white"
+              onClick={onMenuToggle}
+              className="md:hidden p-2 text-gray-400 hover:text-white transition-colors"
             >
               <Menu className="w-6 h-6" />
             </button>
@@ -35,23 +36,24 @@ export default function AdminHeader() {
                   className="object-contain rounded-lg"
                 />
               </div>
-              <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
+              <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500 hidden sm:inline">
                 ADMIN
               </span>
             </Link>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link
               href="/"
-              className="text-gray-400 hover:text-white text-sm font-semibold transition-colors"
+              className="text-gray-400 hover:text-white text-xs sm:text-sm font-semibold transition-colors"
             >
-              Ver Tienda
+              <span className="hidden sm:inline">Ver Tienda</span>
+              <span className="sm:hidden">Tienda</span>
             </Link>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-lg transition-all text-sm font-semibold"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-lg transition-all text-xs sm:text-sm font-semibold"
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">Salir</span>
