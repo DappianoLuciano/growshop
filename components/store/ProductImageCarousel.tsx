@@ -27,7 +27,17 @@ export default function ProductImageCarousel({
   const [internalIndex, setInternalIndex] = useState(0)
 
   const currentIndex = externalIndex !== undefined ? externalIndex : internalIndex
-  const setCurrentIndex = onIndexChange || setInternalIndex
+
+  const updateIndex = (indexOrUpdater: number | ((prev: number) => number)) => {
+    if (onIndexChange) {
+      const newIndex = typeof indexOrUpdater === 'function'
+        ? indexOrUpdater(currentIndex)
+        : indexOrUpdater
+      onIndexChange(newIndex)
+    } else {
+      setInternalIndex(indexOrUpdater as any)
+    }
+  }
 
   if (!images || images.length === 0) {
     return (
@@ -51,19 +61,19 @@ export default function ProductImageCarousel({
   const goToPrevious = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
+    updateIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
   }
 
   const goToNext = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
+    updateIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
   }
 
   const goToSlide = (index: number, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setCurrentIndex(index)
+    updateIndex(index)
   }
 
   return (
