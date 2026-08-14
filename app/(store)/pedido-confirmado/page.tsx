@@ -1,10 +1,11 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Home, Package } from 'lucide-react'
 
-export default function PedidoConfirmadoPage() {
+function PedidoContent() {
   const searchParams = useSearchParams()
   const ordenNumber = searchParams.get('orden')
 
@@ -83,5 +84,17 @@ export default function PedidoConfirmadoPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function PedidoConfirmadoPage() {
+  return (
+    <Suspense fallback={
+      <div className="relative bg-black min-h-screen flex items-center justify-center">
+        <div className="text-white">Cargando...</div>
+      </div>
+    }>
+      <PedidoContent />
+    </Suspense>
   )
 }
