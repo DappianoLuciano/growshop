@@ -1,13 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { Search, SlidersHorizontal, Loader2, ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import ProductImageCarousel from '@/components/store/ProductImageCarousel'
 import { useCart } from '@/contexts/CartContext'
-
-export const dynamic = 'force-dynamic'
 
 interface Product {
   id: string
@@ -35,7 +33,7 @@ interface Product {
   } | null
 }
 
-export default function ProductosPage() {
+function ProductosContent() {
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get('categoria')
   const searchQuery = searchParams.get('busqueda')
@@ -398,5 +396,19 @@ export default function ProductosPage() {
         </div>
       </section>
     </div>
+  )
+}
+
+export default function ProductosPage() {
+  return (
+    <Suspense fallback={
+      <div className="relative bg-black min-h-screen">
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="w-8 h-8 text-green-500 animate-spin" />
+        </div>
+      </div>
+    }>
+      <ProductosContent />
+    </Suspense>
   )
 }
