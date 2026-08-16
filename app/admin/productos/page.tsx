@@ -251,14 +251,14 @@ export default function ProductosAdminPage() {
           </div>
 
           {/* Mobile Cards */}
-          <div className="lg:hidden space-y-4">
+          <div className="lg:hidden space-y-3">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-green-500/50 transition-all"
+                className="bg-gray-900 border border-gray-800 rounded-xl p-3 hover:border-green-500/50 transition-all"
               >
-                <div className="flex gap-4 mb-4">
-                  <div className="relative w-20 h-20 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+                <div className="flex gap-3 mb-3">
+                  <div className="relative w-16 h-16 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
                     {product.images?.[0] ? (
                       <Image
                         src={product.images[0].url}
@@ -273,54 +273,50 @@ export default function ProductosAdminPage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-semibold mb-1 truncate">{product.name}</h3>
+                    <h3 className="text-white font-semibold text-sm mb-1 line-clamp-2">{product.name}</h3>
                     {product.brand && (
-                      <p className="text-gray-400 text-sm mb-2">{product.brand}</p>
+                      <p className="text-gray-400 text-xs mb-1">{product.brand}</p>
                     )}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        product.isActive
-                          ? 'bg-green-500/20 text-green-400'
-                          : 'bg-gray-700 text-gray-400'
-                      }`}>
-                        {product.isActive ? 'Activo' : 'Inactivo'}
-                      </span>
-                      <span className="text-gray-400 text-xs">
-                        {product.category?.name || 'Sin categoría'}
-                      </span>
-                    </div>
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      product.isActive
+                        ? 'bg-green-500/20 text-green-400'
+                        : 'bg-gray-700 text-gray-400'
+                    }`}>
+                      {product.isActive ? 'Activo' : 'Inactivo'}
+                    </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                <div className="flex items-center justify-between text-xs mb-3">
                   <div>
-                    <p className="text-gray-400 text-xs mb-1">Precio</p>
+                    <p className="text-gray-400 mb-0.5">Precio</p>
                     {product.isOnSale && product.salePrice ? (
-                      <div className="space-y-1">
-                        <p className="text-gray-400 text-xs line-through">
-                          ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-white font-bold">
+                          ${parseFloat(product.salePrice.toString()).toLocaleString('es-AR')}
                         </p>
-                        <div className="flex items-center gap-2">
-                          <p className="text-white font-semibold">
-                            ${parseFloat(product.salePrice.toString()).toLocaleString('es-AR')}
-                          </p>
-                          <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs font-bold rounded">
-                            -{Math.round(((parseFloat(product.price.toString()) - parseFloat(product.salePrice.toString())) / parseFloat(product.price.toString())) * 100)}%
-                          </span>
-                        </div>
+                        <span className="px-1 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs font-bold rounded">
+                          -{Math.round(((parseFloat(product.price.toString()) - parseFloat(product.salePrice.toString())) / parseFloat(product.price.toString())) * 100)}%
+                        </span>
                       </div>
                     ) : (
-                      <p className="text-white font-semibold">
+                      <p className="text-white font-bold">
                         ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
                       </p>
                     )}
                   </div>
-                  <div>
-                    <p className="text-gray-400 text-xs mb-1">Stock</p>
-                    <p className={`font-semibold ${
+                  <div className="text-right">
+                    <p className="text-gray-400 mb-0.5">Stock</p>
+                    <p className={`font-bold ${
                       getTotalStock(product) > 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
-                      {getTotalStock(product)} unidades
+                      {getTotalStock(product)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-400 mb-0.5">Cat.</p>
+                    <p className="text-white text-xs truncate max-w-[80px]">
+                      {product.category?.name || '-'}
                     </p>
                   </div>
                 </div>
@@ -328,17 +324,17 @@ export default function ProductosAdminPage() {
                 <div className="flex gap-2">
                   <Link
                     href={`/admin/productos/${product.id}`}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:scale-105 transition-all"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold rounded-lg active:scale-95 transition-all"
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="w-3.5 h-3.5" />
                     Editar
                   </Link>
                   <button
                     onClick={() => handleDelete(product.id, product.name)}
-                    className="px-4 py-2 bg-gray-800 hover:bg-red-500/20 text-gray-400 hover:text-red-500 rounded-lg transition-all"
+                    className="px-3 py-2 bg-gray-800 active:bg-red-500/20 text-gray-400 hover:text-red-500 rounded-lg transition-all"
                     title="Eliminar"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
