@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Package, FolderTree, ShoppingCart, Settings, X } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 const menuItems = [
   { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -13,20 +13,24 @@ const menuItems = [
   { href: '/admin/configuracion', icon: Settings, label: 'Configuración' },
 ]
 
-interface AdminSidebarProps {
-  isOpen?: boolean
-  onClose?: () => void
-}
-
-export default function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
+export default function AdminSidebar() {
   const pathname = usePathname()
+  const [isOpen, setIsOpen] = useState(false)
+
+  // Escuchar evento de toggle del menú
+  useEffect(() => {
+    const handleToggle = () => {
+      setIsOpen(prev => !prev)
+    }
+
+    window.addEventListener('toggleAdminMenu', handleToggle)
+    return () => window.removeEventListener('toggleAdminMenu', handleToggle)
+  }, [])
 
   // Cerrar menú móvil cuando cambia la ruta
   useEffect(() => {
-    if (onClose) {
-      onClose()
-    }
-  }, [pathname, onClose])
+    setIsOpen(false)
+  }, [pathname])
 
   // Prevenir scroll del body cuando el menú móvil está abierto
   useEffect(() => {
@@ -40,13 +44,17 @@ export default function AdminSidebar({ isOpen = false, onClose }: AdminSidebarPr
     }
   }, [isOpen])
 
+  const handleClose = () => {
+    setIsOpen(false)
+  }
+
   return (
     <>
       {/* Overlay móvil */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/60 z-40 md:hidden"
-          onClick={onClose}
+          onClick={handleClose}
         />
       )}
 
@@ -62,7 +70,7 @@ export default function AdminSidebar({ isOpen = false, onClose }: AdminSidebarPr
             MENÚ
           </span>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 text-gray-400 hover:text-white transition-colors"
           >
             <X className="w-6 h-6" />

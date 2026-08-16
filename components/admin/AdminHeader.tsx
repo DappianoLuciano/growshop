@@ -5,13 +5,14 @@ import Image from 'next/image'
 import { Menu, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
-interface AdminHeaderProps {
-  onMenuToggle?: () => void
-}
-
-export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
+export default function AdminHeader() {
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/login' })
+  }
+
+  const handleMenuClick = () => {
+    // Disparar evento personalizado para toggle del menú
+    window.dispatchEvent(new Event('toggleAdminMenu'))
   }
 
   return (
@@ -21,8 +22,9 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
           {/* Logo */}
           <div className="flex items-center gap-3">
             <button
-              onClick={onMenuToggle}
-              className="md:hidden p-2 text-gray-400 hover:text-white transition-colors"
+              onClick={handleMenuClick}
+              type="button"
+              className="md:hidden p-2 text-gray-400 hover:text-white transition-colors active:bg-gray-800 rounded-lg"
             >
               <Menu className="w-6 h-6" />
             </button>
