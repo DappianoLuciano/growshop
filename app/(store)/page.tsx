@@ -77,7 +77,7 @@ export default function HomePage() {
       />
 
       {/* Hero Section */}
-      <section className="relative pt-24 md:pt-32 pb-16 md:pb-40 flex items-center justify-center overflow-hidden z-10">
+      <section className="relative pt-24 md:pt-32 pb-8 md:pb-16 flex items-center justify-center overflow-hidden z-10">
 
         {/* Contenido */}
         <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
@@ -107,6 +107,21 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Productos Destacados */}
+      <section className="relative py-8 md:py-12 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-6 md:mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              Productos Destacados
+            </h2>
+            <p className="text-gray-400 text-sm md:text-base">
+              Los más elegidos por nuestros cultivadores
+            </p>
+          </div>
+          <FeaturedProducts />
         </div>
       </section>
 
@@ -424,9 +439,292 @@ interface LatestProduct {
   variants: { stock: number }[]
 }
 
+function FeaturedProducts() {
+  const [products, setProducts] = useState<LatestProduct[]>([])
+  const [loading, setLoading] = useState(true)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [mobileIndex, setMobileIndex] = useState(0)
+  const productsPerView = 4
+  const mobileProductsPerView = 2
+
+  useEffect(() => {
+    fetchFeaturedProducts()
+  }, [])
+
+  const fetchFeaturedProducts = async () => {
+    try {
+      const response = await fetch('/api/products/featured')
+      if (response.ok) {
+        const data = await response.json()
+        setProducts(data)
+      }
+    } catch (error) {
+      console.error('Error al cargar productos destacados:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getTotalStock = (product: LatestProduct) => {
+    return product.variants.reduce((total, v) => total + v.stock, 0)
+  }
+
+  const getProductPrice = (product: LatestProduct) => {
+    if (product.isOnSale && product.salePrice) {
+      return product.salePrice
+    }
+    return product.price
+  }
+
+  const getDiscount = (product: LatestProduct) => {
+    if (!product.isOnSale || !product.salePrice) return 0
+    return Math.round(((parseFloat(product.price.toString()) - parseFloat(product.salePrice.toString())) / parseFloat(product.price.toString())) * 100)
+  }
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + productsPerView >= products.length ? 0 : prev + productsPerView))
+  }
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - productsPerView < 0 ? Math.max(0, products.length - productsPerView) : prev - productsPerView))
+  }
+
+  const nextMobileSlide = () => {
+    setMobileIndex((prev) => (prev + mobileProductsPerView >= products.length ? 0 : prev + mobileProductsPerView))
+  }
+
+  const prevMobileSlide = () => {
+    setMobileIndex((prev) => (prev - mobileProductsPerView < 0 ? Math.max(0, products.length - mobileProductsPerView) : prev - mobileProductsPerView))
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center text-gray-400 py-8">
+        Cargando productos destacados...
+      </div>
+    )
+  }
+
+  if (products.length === 0) {
+    return null
+  }
+
+  const visibleProducts = products.length > productsPerView ? products.slice(currentIndex, currentIndex + productsPerView) : products
+  const visibleMobileProducts = products.slice(mobileIndex, mobileIndex + mobileProductsPerView)
+
+  return (
+    <>
+      {/* Mobile: Carrusel con 2 productos */}
+      <div className="md:hidden relative">
+        <div className="grid grid-cols-2 gap-3">
+          {visibleMobileProducts.map((product) => (
+            <FeaturedProductCard key={product.id} product={product} getTotalStock={getTotalStock} getProductPrice={getProductPrice} getDiscount={getDiscount} />
+          ))}
+        </div>
+
+        {/* Controles Mobile */}
+        {products.length > mobileProductsPerView && (
+          <div className="flex items-center justify-center gap-4 mt-6">
+            <button
+              onClick={prevMobileSlide}
+              className="p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={mobileIndex === 0}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            {/* Indicadores */}
+            <div className="flex gap-2">
+              {Array.from({ length: Math.ceil(products.length / mobileProductsPerView) }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setMobileIndex(idx * mobileProductsPerView)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    Math.floor(mobileIndex / mobileProductsPerView) === idx
+                      ? 'bg-purple-500 w-6'
+                      : 'bg-gray-600 hover:bg-gray-500'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={nextMobileSlide}
+              className="p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={mobileIndex + mobileProductsPerView >= products.length}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop: Carrusel si hay más de 4 productos */}
+      <div className="hidden md:block relative">
+        {products.length > productsPerView && (
+          <>
+            {/* Botón Anterior */}
+            <button
+              onClick={prevSlide}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-full shadow-lg hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={currentIndex === 0}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            {/* Botón Siguiente */}
+            <button
+              onClick={nextSlide}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-full shadow-lg hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={currentIndex + productsPerView >= products.length}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </>
+        )}
+
+        {/* Grid de productos */}
+        <div className={`grid grid-cols-4 gap-4 ${products.length > productsPerView ? 'px-12' : ''}`}>
+          {visibleProducts.map((product) => (
+            <FeaturedProductCard key={product.id} product={product} getTotalStock={getTotalStock} getProductPrice={getProductPrice} getDiscount={getDiscount} />
+          ))}
+        </div>
+
+        {/* Indicadores */}
+        {products.length > productsPerView && (
+          <div className="flex justify-center gap-2 mt-8">
+            {Array.from({ length: Math.ceil(products.length / productsPerView) }).map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentIndex(idx * productsPerView)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  Math.floor(currentIndex / productsPerView) === idx
+                    ? 'bg-purple-500 w-8'
+                    : 'bg-gray-600 hover:bg-gray-500'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+function FeaturedProductCard({
+  product,
+  getTotalStock,
+  getProductPrice,
+  getDiscount
+}: {
+  product: LatestProduct
+  getTotalStock: (product: LatestProduct) => number
+  getProductPrice: (product: LatestProduct) => number | string
+  getDiscount: (product: LatestProduct) => number
+}) {
+  const discount = getDiscount(product)
+
+  return (
+    <Link
+      href={`/productos/${product.slug}`}
+      className={`group relative bg-gray-900/50 border rounded-lg overflow-hidden transition-all hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20 ${
+        product.isOnSale
+          ? 'border-yellow-500/20 hover:border-yellow-500/50'
+          : 'border-purple-500/20 hover:border-purple-500/50'
+      }`}
+    >
+      {/* Badge de destacado */}
+      <div className="absolute top-2 right-2 z-10 px-2 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full">
+        ⭐
+      </div>
+
+      {/* Badge de descuento */}
+      {discount > 0 && (
+        <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
+          -{discount}%
+        </div>
+      )}
+
+      {/* Imagen */}
+      <div className="relative aspect-square bg-gray-800">
+        {product.images[0] ? (
+          <Image
+            src={product.images[0].url}
+            alt={product.images[0].alt || product.name}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
+            Sin imagen
+          </div>
+        )}
+        {getTotalStock(product) === 0 && (
+          <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+            <span className="text-white font-bold text-sm">Sin Stock</span>
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="p-2 sm:p-3">
+        {product.brand && (
+          <p className="text-xs text-gray-400 mb-0.5">{product.brand}</p>
+        )}
+        <h3 className={`text-sm font-bold mb-1 line-clamp-2 transition-colors text-white ${
+          product.isOnSale ? 'group-hover:text-yellow-400' : 'group-hover:text-purple-400'
+        }`}>
+          {product.name}
+        </h3>
+
+        {product.category && (
+          <p className="text-xs text-gray-500 mb-2">{product.category.name}</p>
+        )}
+
+        {product.isOnSale && product.salePrice ? (
+          <div className="space-y-1">
+            {/* Precio anterior tachado */}
+            <div className="text-sm text-gray-400 line-through">
+              ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+            </div>
+            {/* Precio de oferta en dorado */}
+            <div className="flex items-center justify-between">
+              <span className="text-lg font-black text-yellow-400">
+                ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+              </span>
+              <button className="p-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
+                <ShoppingCart className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-black text-purple-400">
+              ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+            </span>
+            <button className="p-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all">
+              <ShoppingCart className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      </div>
+    </Link>
+  )
+}
+
 function LatestProducts() {
   const [products, setProducts] = useState<LatestProduct[]>([])
   const [loading, setLoading] = useState(true)
+  const [mobileIndex, setMobileIndex] = useState(0)
+  const mobileProductsPerView = 2
 
   useEffect(() => {
     fetchLatestProducts()
@@ -462,6 +760,14 @@ function LatestProducts() {
     return Math.round(((parseFloat(product.price.toString()) - parseFloat(product.salePrice.toString())) / parseFloat(product.price.toString())) * 100)
   }
 
+  const nextMobileSlide = () => {
+    setMobileIndex((prev) => (prev + mobileProductsPerView >= products.length ? 0 : prev + mobileProductsPerView))
+  }
+
+  const prevMobileSlide = () => {
+    setMobileIndex((prev) => (prev - mobileProductsPerView < 0 ? Math.max(0, products.length - mobileProductsPerView) : prev - mobileProductsPerView))
+  }
+
   if (loading) {
     return (
       <div className="text-center text-gray-400 py-8">
@@ -474,94 +780,228 @@ function LatestProducts() {
     return null
   }
 
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-      {products.map((product) => {
-        const discount = getDiscount(product)
-        return (
-          <Link
-            key={product.id}
-            href={`/productos/${product.slug}`}
-            className={`group relative bg-gray-900/50 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
-              product.isOnSale
-                ? 'border-yellow-500/20 hover:border-yellow-500/50'
-                : 'border-gray-800 hover:border-green-500/50'
-            }`}
-          >
-            {/* Badge de descuento */}
-            {discount > 0 && (
-              <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
-                -{discount}%
-              </div>
-            )}
+  const visibleMobileProducts = products.slice(mobileIndex, mobileIndex + mobileProductsPerView)
 
-            {/* Imagen */}
-            <div className="relative aspect-square bg-gray-800">
-              {product.images[0] ? (
-                <Image
-                  src={product.images[0].url}
-                  alt={product.images[0].alt || product.name}
-                  fill
-                  className="object-cover"
+  return (
+    <>
+      {/* Mobile: Carrusel con 2 productos */}
+      <div className="md:hidden relative">
+        <div className="grid grid-cols-2 gap-3">
+          {visibleMobileProducts.map((product) => {
+            const discount = getDiscount(product)
+            return (
+              <Link
+                key={product.id}
+                href={`/productos/${product.slug}`}
+                className={`group relative bg-gray-900/50 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
+                  product.isOnSale
+                    ? 'border-yellow-500/20 hover:border-yellow-500/50'
+                    : 'border-gray-800 hover:border-green-500/50'
+                }`}
+              >
+                {/* Badge de descuento */}
+                {discount > 0 && (
+                  <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
+                    -{discount}%
+                  </div>
+                )}
+
+                {/* Imagen */}
+                <div className="relative aspect-square bg-gray-800">
+                  {product.images[0] ? (
+                    <Image
+                      src={product.images[0].url}
+                      alt={product.images[0].alt || product.name}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
+                      Sin imagen
+                    </div>
+                  )}
+                  {getTotalStock(product) === 0 && (
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">Sin Stock</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="p-2 sm:p-3">
+                  {product.brand && (
+                    <p className="text-xs text-gray-400 mb-0.5">{product.brand}</p>
+                  )}
+                  <h3 className={`text-sm font-bold mb-1 line-clamp-2 transition-colors text-white ${
+                    product.isOnSale ? 'group-hover:text-yellow-400' : 'group-hover:text-green-400'
+                  }`}>
+                    {product.name}
+                  </h3>
+
+                  {product.category && (
+                    <p className="text-xs text-gray-500 mb-2">{product.category.name}</p>
+                  )}
+
+                  {product.isOnSale && product.salePrice ? (
+                    <div className="space-y-1">
+                      <div className="text-sm text-gray-400 line-through">
+                        ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-black text-yellow-400">
+                          ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                        </span>
+                        <button className="p-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
+                          <ShoppingCart className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-black text-green-400">
+                        ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                      </span>
+                      <button className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
+                        <ShoppingCart className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+
+        {/* Controles Mobile - Verde */}
+        {products.length > mobileProductsPerView && (
+          <div className="flex items-center justify-center gap-4 mt-6">
+            <button
+              onClick={prevMobileSlide}
+              className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={mobileIndex === 0}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            {/* Indicadores */}
+            <div className="flex gap-2">
+              {Array.from({ length: Math.ceil(products.length / mobileProductsPerView) }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setMobileIndex(idx * mobileProductsPerView)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    Math.floor(mobileIndex / mobileProductsPerView) === idx
+                      ? 'bg-green-500 w-6'
+                      : 'bg-gray-600 hover:bg-gray-500'
+                  }`}
                 />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
-                  Sin imagen
-                </div>
-              )}
-              {getTotalStock(product) === 0 && (
-                <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">Sin Stock</span>
-                </div>
-              )}
+              ))}
             </div>
 
-            {/* Info */}
-            <div className="p-2 sm:p-3">
-              {product.brand && (
-                <p className="text-xs text-gray-400 mb-0.5">{product.brand}</p>
-              )}
-              <h3 className={`text-sm font-bold mb-1 line-clamp-2 transition-colors text-white ${
-                product.isOnSale ? 'group-hover:text-yellow-400' : 'group-hover:text-green-400'
-              }`}>
-                {product.name}
-              </h3>
+            <button
+              onClick={nextMobileSlide}
+              className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={mobileIndex + mobileProductsPerView >= products.length}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        )}
+      </div>
 
-              {product.category && (
-                <p className="text-xs text-gray-500 mb-2">{product.category.name}</p>
+      {/* Desktop: Grid normal */}
+      <div className="hidden md:grid grid-cols-4 gap-4">
+        {products.map((product) => {
+          const discount = getDiscount(product)
+          return (
+            <Link
+              key={product.id}
+              href={`/productos/${product.slug}`}
+              className={`group relative bg-gray-900/50 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
+                product.isOnSale
+                  ? 'border-yellow-500/20 hover:border-yellow-500/50'
+                  : 'border-gray-800 hover:border-green-500/50'
+              }`}
+            >
+              {/* Badge de descuento */}
+              {discount > 0 && (
+                <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
+                  -{discount}%
+                </div>
               )}
 
-              {product.isOnSale && product.salePrice ? (
-                <div className="space-y-1">
-                  {/* Precio anterior tachado */}
-                  <div className="text-sm text-gray-400 line-through">
-                    ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+              {/* Imagen */}
+              <div className="relative aspect-square bg-gray-800">
+                {product.images[0] ? (
+                  <Image
+                    src={product.images[0].url}
+                    alt={product.images[0].alt || product.name}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
+                    Sin imagen
                   </div>
-                  {/* Precio de oferta en dorado */}
+                )}
+                {getTotalStock(product) === 0 && (
+                  <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">Sin Stock</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="p-2 sm:p-3">
+                {product.brand && (
+                  <p className="text-xs text-gray-400 mb-0.5">{product.brand}</p>
+                )}
+                <h3 className={`text-sm font-bold mb-1 line-clamp-2 transition-colors text-white ${
+                  product.isOnSale ? 'group-hover:text-yellow-400' : 'group-hover:text-green-400'
+                }`}>
+                  {product.name}
+                </h3>
+
+                {product.category && (
+                  <p className="text-xs text-gray-500 mb-2">{product.category.name}</p>
+                )}
+
+                {product.isOnSale && product.salePrice ? (
+                  <div className="space-y-1">
+                    {/* Precio anterior tachado */}
+                    <div className="text-sm text-gray-400 line-through">
+                      ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                    </div>
+                    {/* Precio de oferta en dorado */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-black text-yellow-400">
+                        ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                      </span>
+                      <button className="p-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
+                        <ShoppingCart className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-black text-yellow-400">
+                    <span className="text-lg font-black text-green-400">
                       ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
                     </span>
-                    <button className="p-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
+                    <button className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
                       <ShoppingCart className="w-4 h-4" />
                     </button>
                   </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-black text-green-400">
-                    ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
-                  </span>
-                  <button className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
-                    <ShoppingCart className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </Link>
-        )
-      })}
-    </div>
+                )}
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </>
   )
 }
 

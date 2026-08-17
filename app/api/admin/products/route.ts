@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('📦 Datos recibidos:', JSON.stringify(body, null, 2))
 
-    const { name, marca, sku, categoryId, price, stock, description, images, isActive, isOnSale, salePrice, capacity, size, power } = body
+    const { name, marca, sku, categoryId, price, stock, description, images, isActive, isFeatured, isOnSale, salePrice, capacity, size, power } = body
 
     // Validar datos requeridos
     if (!name || !marca || !sku || !categoryId || price === undefined || stock === undefined) {
@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
         salePrice: salePrice || null,
         categoryId,
         isActive: isActive !== false,
+        isFeatured: isFeatured || false,
         // Crear imágenes si existen
         images: images && images.length > 0 ? {
           create: images

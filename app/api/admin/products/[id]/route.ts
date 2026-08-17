@@ -38,7 +38,7 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const { name, marca, sku, categoryId, price, stock, description, images, isActive, isOnSale, salePrice, capacity, size, power } = body
+    const { name, marca, sku, categoryId, price, stock, description, images, isActive, isFeatured, isOnSale, salePrice, capacity, size, power } = body
 
     // Actualizar producto y su variante
     const product = await prisma.product.update({
@@ -52,6 +52,7 @@ export async function PUT(
         salePrice: salePrice || null,
         categoryId,
         isActive: isActive !== false,
+        isFeatured: isFeatured || false,
         // Actualizar imágenes
         images: images && images.length > 0 ? {
           deleteMany: {},

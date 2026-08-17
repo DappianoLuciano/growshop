@@ -94,133 +94,170 @@ export default function Header() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            {/* Menú Hamburguesa - Solo Mobile */}
-            <button
-              onClick={toggleMenu}
-              className="md:hidden p-3 bg-gray-900/50 border border-gray-700 rounded-xl hover:bg-green-500/10 hover:border-green-500 transition-all duration-300"
-              aria-label="Menú"
-            >
-              <Menu className="w-5 h-5 text-white" />
-            </button>
+          <div className="flex items-center gap-2 md:gap-6 h-20">
+            {/* Contenedor izquierda (Hamburguesa + Logo) - Mobile */}
+            <div className="flex items-center gap-2 md:hidden">
+              {/* Menú Hamburguesa */}
+              <button
+                onClick={toggleMenu}
+                className="h-10 w-10 flex items-center justify-center bg-gray-900/50 border border-gray-700 rounded-xl hover:bg-green-500/10 hover:border-green-500 transition-all duration-300"
+                aria-label="Menú"
+              >
+                <Menu className="w-5 h-5 text-white" />
+              </button>
 
-            {/* Logo con efecto glow */}
-            <Link href="/" className="md:relative absolute left-1/2 -translate-x-1/2 md:translate-x-0 md:left-0 flex items-center gap-3 group">
-            <div className="relative">
-              <div className="absolute -inset-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-300"></div>
-              <div className="relative w-14 h-14 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-                <Image
-                  src="/images/logo.jpg"
-                  alt="AGRO.GROW Logo"
-                  fill
-                  className="object-contain rounded-full"
-                  priority
-                />
-              </div>
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
-                AGRO.GROW
-              </span>
-            </div>
-          </Link>
-
-          {/* Navigation con efectos */}
-          <nav className="hidden md:flex items-center gap-2">
-            <NavLink href="/productos">
-              Productos
-            </NavLink>
-            <NavLink href="/ofertas" special>
-              Ofertas
-            </NavLink>
-            <NavLink href="/contacto">
-              Contacto
-            </NavLink>
-          </nav>
-
-          {/* Búsqueda y Cart */}
-          <div className="flex items-center gap-3">
-            {/* Barra de búsqueda compacta con dropdown */}
-            <form onSubmit={handleSearch} className="hidden md:block relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onBlur={() => setTimeout(() => setShowResults(false), 200)}
-                placeholder="Buscar productos..."
-                className="w-40 pl-9 pr-3 py-2.5 bg-gray-900/50 border border-gray-700 rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-green-500 focus:w-56 transition-all"
-              />
-
-              {/* Dropdown de resultados */}
-              {showResults && searchResults.length > 0 && (
-                <div className="absolute top-full mt-2 left-0 right-0 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 min-w-[320px]">
-                  <div className="max-h-96 overflow-y-auto">
-                    {searchResults.map((result) => {
-                      const discount = result.isOnSale && result.salePrice
-                        ? Math.round(((result.price - result.salePrice) / result.price) * 100)
-                        : 0
-                      const displayPrice = result.isOnSale && result.salePrice ? result.salePrice : result.price
-
-                      return (
-                        <button
-                          key={result.id}
-                          type="button"
-                          onClick={() => handleResultClick(result.slug)}
-                          className="w-full px-4 py-3 hover:bg-gray-800 transition-colors flex items-center gap-3 border-b border-gray-800 last:border-0"
-                        >
-                          {result.image && (
-                            <div className="w-12 h-12 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative">
-                              {discount > 0 && (
-                                <div className="absolute -top-1 -right-1 z-10 px-1.5 py-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-bold rounded-full">
-                                  -{discount}%
-                                </div>
-                              )}
-                              <img
-                                src={result.image}
-                                alt={result.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1 text-left">
-                            {result.brand && (
-                              <p className="text-xs text-gray-500">{result.brand}</p>
-                            )}
-                            <p className="text-sm text-white font-medium line-clamp-1">{result.name}</p>
-                            {result.isOnSale && result.salePrice ? (
-                              <div className="flex items-center gap-2">
-                                <p className="text-xs text-gray-400 line-through">
-                                  ${result.price.toLocaleString('es-AR')}
-                                </p>
-                                <p className="text-sm text-yellow-400 font-bold">
-                                  ${displayPrice.toLocaleString('es-AR')}
-                                </p>
-                              </div>
-                            ) : (
-                              <p className="text-sm text-green-400 font-bold">
-                                ${displayPrice.toLocaleString('es-AR')}
-                              </p>
-                            )}
-                          </div>
-                        </button>
-                      )
-                    })}
+              {/* Logo Mobile */}
+              <Link href="/" className="h-10 w-10 flex items-center justify-center group flex-shrink-0">
+                <div className="relative w-10 h-10">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-300"></div>
+                  <div className="relative w-full h-full transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+                    <Image
+                      src="/images/logo.jpg"
+                      alt="AGRO.GROW Logo"
+                      fill
+                      className="object-contain rounded-full"
+                      priority
+                    />
                   </div>
                 </div>
-              )}
-            </form>
+              </Link>
+            </div>
 
-            {/* Cart con efecto premium */}
+            {/* Logo Desktop */}
+            <Link href="/" className="hidden md:flex items-center gap-3 group flex-shrink-0">
+              <div className="relative">
+                <div className="absolute -inset-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-300"></div>
+                <div className="relative w-14 h-14 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+                  <Image
+                    src="/images/logo.jpg"
+                    alt="AGRO.GROW Logo"
+                    fill
+                    className="object-contain rounded-full"
+                    priority
+                  />
+                </div>
+              </div>
+              <div className="hidden sm:block">
+                <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
+                  AGRO.GROW
+                </span>
+              </div>
+            </Link>
+
+            {/* Buscador - Centro Mobile y Desktop */}
+            <div className="flex-1 md:max-w-md flex justify-center">
+              <form onSubmit={handleSearch} className="relative w-full max-w-[90px] md:max-w-full focus-within:max-w-full transition-all duration-500 ease-in-out">
+                <Search className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-all duration-500 ease-in-out" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onBlur={() => setTimeout(() => setShowResults(false), 200)}
+                  placeholder="Buscar..."
+                  className="w-full h-10 pl-7 md:pl-9 pr-2 md:pr-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white text-xs md:text-sm placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all duration-500 ease-in-out"
+                />
+
+                {/* Dropdown de resultados */}
+                {showResults && searchResults.length > 0 && (
+                  <div className="absolute top-full mt-2 left-0 right-0 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 min-w-[320px]">
+                    <div className="max-h-96 overflow-y-auto">
+                      {searchResults.map((result) => {
+                        const discount = result.isOnSale && result.salePrice
+                          ? Math.round(((result.price - result.salePrice) / result.price) * 100)
+                          : 0
+                        const displayPrice = result.isOnSale && result.salePrice ? result.salePrice : result.price
+
+                        return (
+                          <button
+                            key={result.id}
+                            type="button"
+                            onClick={() => handleResultClick(result.slug)}
+                            className="w-full px-4 py-3 hover:bg-gray-800 transition-colors flex items-center gap-3 border-b border-gray-800 last:border-0"
+                          >
+                            {result.image && (
+                              <div className="w-12 h-12 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative">
+                                {discount > 0 && (
+                                  <div className="absolute -top-1 -right-1 z-10 px-1.5 py-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-bold rounded-full">
+                                    -{discount}%
+                                  </div>
+                                )}
+                                <img
+                                  src={result.image}
+                                  alt={result.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                            <div className="flex-1 text-left">
+                              {result.brand && (
+                                <p className="text-xs text-gray-500">{result.brand}</p>
+                              )}
+                              <p className="text-sm text-white font-medium line-clamp-1">{result.name}</p>
+                              {result.isOnSale && result.salePrice ? (
+                                <div className="flex items-center gap-2">
+                                  <p className="text-xs text-gray-400 line-through">
+                                    ${result.price.toLocaleString('es-AR')}
+                                  </p>
+                                  <p className="text-sm text-yellow-400 font-bold">
+                                    ${displayPrice.toLocaleString('es-AR')}
+                                  </p>
+                                </div>
+                              ) : (
+                                <p className="text-sm text-green-400 font-bold">
+                                  ${displayPrice.toLocaleString('es-AR')}
+                                </p>
+                              )}
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </form>
+            </div>
+
+            {/* Enlaces y Cart - Derecha */}
+            <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+              {/* Navigation */}
+              <nav className="flex items-center gap-1">
+                <NavLink href="/productos">
+                  Productos
+                </NavLink>
+                <NavLink href="/ofertas" special>
+                  Ofertas
+                </NavLink>
+                <NavLink href="/contacto">
+                  Contacto
+                </NavLink>
+              </nav>
+
+              {/* Cart */}
+              <Link
+                href="/carrito"
+                className="relative group"
+              >
+                <div className="flex items-center gap-3 px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/50">
+                  <ShoppingCart className="w-5 h-5 text-white" />
+                  <span className="text-white font-bold hidden lg:block">Carrito</span>
+                  {totalItems > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse shadow-lg">
+                      {totalItems}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            </div>
+
+            {/* Cart Mobile */}
             <Link
               href="/carrito"
-              className="relative group"
+              className="md:hidden relative group flex-shrink-0"
             >
-              <div className="flex items-center gap-3 px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/50">
+              <div className="h-10 w-10 flex items-center justify-center bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300">
                 <ShoppingCart className="w-5 h-5 text-white" />
-                <span className="text-white font-bold hidden sm:block">Carrito</span>
                 {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse shadow-lg">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse shadow-lg">
                     {totalItems}
                   </span>
                 )}
@@ -228,7 +265,6 @@ export default function Header() {
             </Link>
           </div>
         </div>
-      </div>
     </header>
 
     {/* Menú lateral */}

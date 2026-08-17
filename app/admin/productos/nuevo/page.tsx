@@ -34,6 +34,7 @@ export default function NuevoProductoPage() {
     sku: '',
     categoryId: '',
     isActive: true,
+    isFeatured: false,
     // Características según categoría
     capacity: '',
     size: '',
@@ -483,18 +484,33 @@ export default function NuevoProductoPage() {
             {/* Estado */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
               <h2 className="text-lg font-bold text-white mb-4">Estado</h2>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="w-5 h-5 accent-green-500"
-                />
-                <div>
-                  <p className="text-white font-semibold">Producto activo</p>
-                  <p className="text-xs text-gray-400">Visible en la tienda</p>
-                </div>
-              </label>
+              <div className="space-y-4">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    className="w-5 h-5 accent-green-500"
+                  />
+                  <div>
+                    <p className="text-white font-semibold">Producto activo</p>
+                    <p className="text-xs text-gray-400">Visible en la tienda</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.isFeatured}
+                    onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                    className="w-5 h-5 accent-yellow-500"
+                  />
+                  <div>
+                    <p className="text-white font-semibold">Producto destacado ⭐</p>
+                    <p className="text-xs text-gray-400">Mostrar en sección destacados</p>
+                  </div>
+                </label>
+              </div>
             </div>
 
             {/* Acciones */}
