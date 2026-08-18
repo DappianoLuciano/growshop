@@ -46,6 +46,35 @@ export async function GET(
   }
 }
 
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const body = await request.json()
+    const { name, description, color } = body
+
+    const category = await prisma.category.update({
+      where: { id },
+      data: {
+        name,
+        description: description || null,
+        color: color || null,
+      },
+    })
+
+    console.log('✅ Categoría actualizada:', category)
+    return NextResponse.json(category)
+  } catch (error: any) {
+    console.error('Error al actualizar categoría:', error)
+    return NextResponse.json(
+      { error: 'Error al actualizar categoría', details: error.message },
+      { status: 500 }
+    )
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
