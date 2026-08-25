@@ -166,6 +166,8 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
 
   const totalStock = getTotalStock(product)
   const variant = product.variants[0]
+  const backUrl = product.isOnSale ? '/ofertas' : '/productos'
+  const backText = product.isOnSale ? 'Volver a Ofertas' : 'Volver a Productos'
 
   return (
     <div className="relative bg-black min-h-screen">
@@ -179,11 +181,15 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Back button */}
           <Link
-            href="/productos"
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors text-sm"
+            href={backUrl}
+            className={`inline-flex items-center gap-2 mb-4 transition-colors text-sm ${
+              product.isOnSale
+                ? 'text-yellow-400 hover:text-yellow-300'
+                : 'text-gray-400 hover:text-white'
+            }`}
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver a productos
+            {backText}
           </Link>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
