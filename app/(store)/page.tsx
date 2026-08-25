@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { ShoppingCart } from 'lucide-react'
+import ProductImageCarousel from '@/components/store/ProductImageCarousel'
 
 // Valores fijos para las partículas (evita problemas de hidratación)
 const particles = [
@@ -63,15 +64,11 @@ export default function HomePage() {
 
         {/* Contenido */}
         <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-          <div className="mb-8 inline-block">
-            <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-300 to-green-500">
-              AGRO.GROW
+          <div className="mb-12 md:mb-16 inline-block">
+            <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-300 to-green-500">
+              EL RINCON DEL CULTIVADOR
             </h1>
           </div>
-
-          <p className="text-lg md:text-xl text-green-400 mb-8 max-w-3xl mx-auto animate-fadeIn-delayed">
-            EL RINCON DEL CULTIVADOR
-          </p>
 
           <div className="flex justify-center items-center animate-fadeIn-delayed-2">
             <Link
@@ -89,12 +86,9 @@ export default function HomePage() {
       <section className="relative py-8 md:py-12 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-6 md:mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-              Productos Destacados
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              PRODUCTOS DESTACADOS
             </h2>
-            <p className="text-gray-400 text-sm md:text-base">
-              Los más elegidos por nuestros cultivadores
-            </p>
           </div>
           <FeaturedProducts />
         </div>
@@ -104,19 +98,27 @@ export default function HomePage() {
       <section className="relative py-8 md:py-20 z-10">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-12 text-center">
-            Categorías Principales
+            CATEGORÍAS PRINCIPALES
           </h2>
           <CategoryCarousel />
         </div>
       </section>
 
-      {/* Últimos Productos */}
+      {/* Ofertas */}
       <section className="relative py-8 md:py-16 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8 text-center">
-            Últimos Productos
+            OFERTAS
           </h2>
-          <LatestProducts />
+          <OfferProducts />
+          <div className="flex justify-center mt-8">
+            <Link
+              href="/ofertas"
+              className="px-8 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold text-lg rounded-xl hover:scale-105 transition-all duration-300"
+            >
+              Ver Ofertas
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -628,20 +630,13 @@ function FeaturedProductCard({
         </div>
       )}
 
-      {/* Imagen */}
+      {/* Carrusel de imágenes */}
       <div className="relative aspect-square bg-gray-800">
-        {product.images[0] ? (
-          <Image
-            src={product.images[0].url}
-            alt={product.images[0].alt || product.name}
-            fill
-            className="object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
-            Sin imagen
-          </div>
-        )}
+        <ProductImageCarousel
+          images={product.images}
+          productName={product.name}
+          compact={true}
+        />
         {getTotalStock(product) === 0 && (
           <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
             <span className="text-white font-bold text-sm">Sin Stock</span>
@@ -695,25 +690,26 @@ function FeaturedProductCard({
   )
 }
 
-function LatestProducts() {
+function OfferProducts() {
   const [products, setProducts] = useState<LatestProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [mobileIndex, setMobileIndex] = useState(0)
   const mobileProductsPerView = 2
 
   useEffect(() => {
-    fetchLatestProducts()
+    fetchOfferProducts()
   }, [])
 
-  const fetchLatestProducts = async () => {
+  const fetchOfferProducts = async () => {
     try {
-      const response = await fetch('/api/products/latest')
+      const response = await fetch('/api/products/offers')
       if (response.ok) {
         const data = await response.json()
-        setProducts(data)
+        // Limitar a 4 productos
+        setProducts(data.slice(0, 4))
       }
     } catch (error) {
-      console.error('Error al cargar productos:', error)
+      console.error('Error al cargar ofertas:', error)
     } finally {
       setLoading(false)
     }
@@ -781,20 +777,13 @@ function LatestProducts() {
                   </div>
                 )}
 
-                {/* Imagen */}
+                {/* Carrusel de imágenes */}
                 <div className="relative aspect-square bg-gray-800">
-                  {product.images[0] ? (
-                    <Image
-                      src={product.images[0].url}
-                      alt={product.images[0].alt || product.name}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
-                      Sin imagen
-                    </div>
-                  )}
+                  <ProductImageCarousel
+                    images={product.images}
+                    productName={product.name}
+                    compact={true}
+                  />
                   {getTotalStock(product) === 0 && (
                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
                       <span className="text-white font-bold text-sm">Sin Stock</span>
@@ -909,20 +898,13 @@ function LatestProducts() {
                 </div>
               )}
 
-              {/* Imagen */}
+              {/* Carrusel de imágenes */}
               <div className="relative aspect-square bg-gray-800">
-                {product.images[0] ? (
-                  <Image
-                    src={product.images[0].url}
-                    alt={product.images[0].alt || product.name}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
-                    Sin imagen
-                  </div>
-                )}
+                <ProductImageCarousel
+                  images={product.images}
+                  productName={product.name}
+                  compact={true}
+                />
                 {getTotalStock(product) === 0 && (
                   <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
                     <span className="text-white font-bold text-sm">Sin Stock</span>

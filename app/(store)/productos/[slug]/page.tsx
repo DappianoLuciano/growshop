@@ -43,10 +43,17 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
   const [error, setError] = useState('')
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [addedToCart, setAddedToCart] = useState(false)
+  const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([])
 
   useEffect(() => {
     fetchProduct()
   }, [])
+
+  useEffect(() => {
+    if (product?.category?.id) {
+      fetchSuggestedProducts()
+    }
+  }, [product])
 
   const fetchProduct = async () => {
     try {
@@ -65,6 +72,24 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
     }
   }
 
+  const fetchSuggestedProducts = async () => {
+    if (!product) return
+
+    try {
+      // Buscar todos los productos sin filtro de categoría
+      const response = await fetch('/api/products')
+      if (response.ok) {
+        const data = await response.json()
+        // Filtrar el producto actual y aleatorizar
+        const filtered = data.filter((p: Product) => p.id !== product.id)
+        const shuffled = filtered.sort(() => Math.random() - 0.5)
+        setSuggestedProducts(shuffled.slice(0, 4))
+      }
+    } catch (error) {
+      console.error('Error al cargar productos sugeridos:', error)
+    }
+  }
+
   const getTotalStock = (product: Product) => {
     return product.variants.reduce((total, v) => total + v.stock, 0)
   }
@@ -80,6 +105,11 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
   const getDiscount = (product: Product) => {
     if (!product.isOnSale || !product.salePrice) return 0
     return Math.round(((parseFloat(product.price.toString()) - parseFloat(product.salePrice.toString())) / parseFloat(product.price.toString())) * 100)
+  }
+
+  const formatPrice = (price: number | string) => {
+    const numPrice = Math.floor(parseFloat(price.toString()))
+    return numPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
   }
 
   const handleAddToCart = () => {
@@ -351,6 +381,92 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
               </button>
             </div>
           </div>
+
+          {/* Productos Sugeridos */}
+          {suggestedProducts.length > 0 && (
+            <div className="mt-12 md:mt-16">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">
+                PRODUCTOS SUGERIDOS
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                {suggestedProducts.map((suggestedProduct) => {
+                  const discount = getDiscount(suggestedProduct)
+                  const displayPrice = getProductPrice(suggestedProduct)
+
+                  return (
+                    <Link
+                      key={suggestedProduct.id}
+                      href={`/productos/${suggestedProduct.slug}`}
+                      className={`group relative bg-gray-900/50 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
+                        suggestedProduct.isOnSale
+                          ? 'border-yellow-500/20 hover:border-yellow-500/50'
+                          : 'border-gray-800 hover:border-green-500/50'
+                      }`}
+                    >
+                      {/* Badge de descuento */}
+                      {discount > 0 && (
+                        <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
+                          -{discount}%
+                        </div>
+                      )}
+
+                      {/* Imagen */}
+                      <div className="relative aspect-square bg-gray-800">
+                        {suggestedProduct.images[0] ? (
+                          <Image
+                            src={suggestedProduct.images[0].url}
+                            alt={suggestedProduct.images[0].alt || suggestedProduct.name}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
+                            Sin imagen
+                          </div>
+                        )}
+                        {getTotalStock(suggestedProduct) === 0 && (
+                          <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                            <span className="text-white font-bold text-sm">Sin Stock</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="p-2 sm:p-3">
+                        {suggestedProduct.brand && (
+                          <p className="text-xs text-gray-400 mb-0.5">{suggestedProduct.brand}</p>
+                        )}
+                        <h3 className={`text-sm font-bold mb-1 line-clamp-2 transition-colors text-white ${
+                          suggestedProduct.isOnSale ? 'group-hover:text-yellow-400' : 'group-hover:text-green-400'
+                        }`}>
+                          {suggestedProduct.name}
+                        </h3>
+
+                        {suggestedProduct.category && (
+                          <p className="text-xs text-gray-500 mb-2">{suggestedProduct.category.name}</p>
+                        )}
+
+                        {suggestedProduct.isOnSale && suggestedProduct.salePrice ? (
+                          <div className="space-y-1">
+                            <div className="text-sm text-gray-400 line-through">
+                              ${formatPrice(suggestedProduct.price)}
+                            </div>
+                            <div className="text-lg font-black text-yellow-400">
+                              ${formatPrice(displayPrice)}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-lg font-black text-green-400">
+                            ${formatPrice(displayPrice)}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

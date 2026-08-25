@@ -21,7 +21,6 @@ export async function GET(request: Request) {
       include: {
         images: {
           orderBy: { order: 'asc' },
-          take: 1,
         },
         variants: {
           where: { isActive: true },

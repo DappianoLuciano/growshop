@@ -45,6 +45,8 @@ function ProductosContent() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam)
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState<string>('default')
+  const [currentPage, setCurrentPage] = useState(1)
+  const productsPerPage = 8
 
   useEffect(() => {
     fetchCategories()
@@ -58,6 +60,7 @@ function ProductosContent() {
 
   useEffect(() => {
     fetchProducts()
+    setCurrentPage(1) // Reset a página 1 cuando cambia categoría o búsqueda
   }, [selectedCategory, searchQuery])
 
   const fetchCategories = async () => {
@@ -112,6 +115,11 @@ function ProductosContent() {
     return product.variants.reduce((total, v) => total + v.stock, 0)
   }
 
+  const formatPrice = (price: number | string) => {
+    const numPrice = Math.floor(parseFloat(price.toString()))
+    return numPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  }
+
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
     e.preventDefault()
     e.stopPropagation()
@@ -149,6 +157,17 @@ function ProductosContent() {
         return 0
     }
   })
+
+  // Paginación
+  const totalPages = Math.ceil(sortedProducts.length / productsPerPage)
+  const indexOfLastProduct = currentPage * productsPerPage
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+  const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct)
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <div className="relative bg-black min-h-screen">
@@ -219,7 +238,7 @@ function ProductosContent() {
             <aside className={`md:w-64 ${showFilters ? 'block' : 'hidden md:block'}`}>
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 md:p-6 backdrop-blur-sm">
                 <h2 className="text-lg font-bold text-white mb-4">Categorías</h2>
-                <ul className="space-y-2">
+                <ul className="space-y-2 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-800">
                   <li>
                     <button
                       onClick={() => setSelectedCategory(null)}
@@ -302,8 +321,9 @@ function ProductosContent() {
                   </div>
                 </div>
               ) : (
+                <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                  {sortedProducts.map((product) => {
+                  {currentProducts.map((product) => {
                     const discount = getDiscount(product)
                     return (
                       <Link
@@ -355,12 +375,12 @@ function ProductosContent() {
                             <div className="space-y-1">
                               {/* Precio anterior tachado */}
                               <div className="text-sm text-gray-400 line-through">
-                                ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                                ${formatPrice(product.price)}
                               </div>
                               {/* Precio de oferta en dorado */}
                               <div className="flex items-center justify-between">
                                 <span className="text-lg font-black text-yellow-400">
-                                  ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                                  ${formatPrice(getProductPrice(product))}
                                 </span>
                                 <button
                                   onClick={(e) => handleAddToCart(e, product)}
@@ -374,7 +394,7 @@ function ProductosContent() {
                           ) : (
                             <div className="flex items-center justify-between">
                               <span className="text-lg font-black text-green-400">
-                                ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                                ${formatPrice(getProductPrice(product))}
                               </span>
                               <button
                                 onClick={(e) => handleAddToCart(e, product)}
@@ -390,6 +410,71 @@ function ProductosContent() {
                     )
                   })}
                 </div>
+
+                {/* Controles de paginación */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    {/* Info de página */}
+                    <p className="text-gray-400 text-sm">
+                      Página <span className="text-white font-semibold">{currentPage}</span> de <span className="text-white font-semibold">{totalPages}</span>
+                    </p>
+
+                    {/* Botones de navegación */}
+                    <div className="flex items-center gap-2">
+                      {/* Botón Anterior */}
+                      <button
+                        onClick={() => goToPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+
+                      {/* Números de página */}
+                      <div className="flex gap-2">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                          // Mostrar solo algunas páginas alrededor de la actual
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <button
+                                key={page}
+                                onClick={() => goToPage(page)}
+                                className={`w-10 h-10 rounded-lg transition-all ${
+                                  currentPage === page
+                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold'
+                                    : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            )
+                          } else if (page === currentPage - 2 || page === currentPage + 2) {
+                            return <span key={page} className="text-gray-500 px-2">...</span>
+                          }
+                          return null
+                        })}
+                      </div>
+
+                      {/* Botón Siguiente */}
+                      <button
+                        onClick={() => goToPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
+                </>
               )}
             </main>
           </div>

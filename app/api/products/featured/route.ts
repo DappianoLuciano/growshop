@@ -13,7 +13,6 @@ export async function GET() {
           orderBy: {
             order: 'asc',
           },
-          take: 1,
         },
         category: true,
         variants: {

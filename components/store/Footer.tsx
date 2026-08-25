@@ -37,6 +37,15 @@ export default function Footer() {
               Instagram
             </a>
             <a
+              href="https://www.facebook.com/profile.php?id=61593407327177"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+              className="px-4 py-2 bg-[#1877F2] hover:bg-[#0e5fc7] hover:scale-105 rounded-lg transition-all text-xs font-semibold text-white"
+            >
+              Facebook
+            </a>
+            <a
               href="https://wa.me/5491136295630"
               target="_blank"
               rel="noopener noreferrer"
@@ -85,6 +94,15 @@ export default function Footer() {
                   className="px-3 py-1.5 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 hover:scale-105 rounded-lg transition-all text-xs font-semibold text-white"
                 >
                   Instagram
+                </a>
+                <a
+                  href="https://www.facebook.com/profile.php?id=61593407327177"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook"
+                  className="px-3 py-1.5 bg-[#1877F2] hover:bg-[#0e5fc7] hover:scale-105 rounded-lg transition-all text-xs font-semibold text-white"
+                >
+                  Facebook
                 </a>
                 <a
                   href="https://wa.me/5491136295630"

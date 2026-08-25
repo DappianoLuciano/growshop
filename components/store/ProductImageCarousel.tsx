@@ -105,8 +105,8 @@ export default function ProductImageCarousel({
       )}
 
       {/* Dots para modo compacto */}
-      {compact && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+      {compact && images.length > 1 && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
           {images.map((_, index) => (
             <button
               key={index}
@@ -114,7 +114,7 @@ export default function ProductImageCarousel({
               className={`w-1.5 h-1.5 rounded-full transition-all ${
                 index === currentIndex
                   ? 'bg-green-500 w-4'
-                  : 'bg-white/50 hover:bg-white/70'
+                  : 'bg-gray-400 hover:bg-gray-300'
               }`}
             />
           ))}

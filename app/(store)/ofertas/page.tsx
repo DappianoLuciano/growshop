@@ -147,19 +147,11 @@ export default function OfertasPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="inline-block mb-4">
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm font-bold rounded-full">
-                <Sparkles className="w-4 h-4" />
+            <h1 className="text-4xl md:text-5xl font-black">
+              <div className="inline-block px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-full">
                 OFERTAS ESPECIALES
-                <Sparkles className="w-4 h-4" />
               </div>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-300 to-yellow-500 mb-4">
-              Promociones y Descuentos
             </h1>
-            <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-              Las mejores ofertas en productos seleccionados
-            </p>
           </div>
 
           {/* Filtros Mobile - Dropdowns */}
