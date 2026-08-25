@@ -209,7 +209,7 @@ export default function OfertasPage() {
             <aside className="hidden md:block md:w-64">
               <div className="bg-gray-900/50 border border-yellow-500/20 rounded-xl p-4 md:p-6 backdrop-blur-sm">
                 <h2 className="text-lg font-bold text-white mb-4">Categorías</h2>
-                <ul className="space-y-2">
+                <ul className="space-y-2 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-yellow-500 scrollbar-track-gray-800">
                   <li>
                     <button
                       onClick={() => setSelectedCategory(null)}
