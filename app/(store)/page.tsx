@@ -30,15 +30,6 @@ const particles = [
 ]
 
 export default function HomePage() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
-    }
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
 
   return (
     <div className="relative bg-black overflow-hidden min-h-screen">
@@ -67,41 +58,25 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* Efecto de spotlight que sigue al mouse */}
-      <div
-        className="fixed w-96 h-96 bg-green-500/30 rounded-full blur-3xl pointer-events-none transition-all duration-1000 ease-out z-0"
-        style={{
-          left: `${mousePosition.x - 192}px`,
-          top: `${mousePosition.y - 192}px`,
-        }}
-      />
-
       {/* Hero Section */}
       <section className="relative pt-24 md:pt-32 pb-8 md:pb-16 flex items-center justify-center overflow-hidden z-10">
 
         {/* Contenido */}
         <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
           <div className="mb-8 inline-block">
-            <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 rounded-lg blur-xl opacity-75 animate-pulse-slow"></div>
-              <h1 className="relative text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-300 to-green-500 animate-gradient-x">
-                AGRO.GROW
-              </h1>
-            </div>
+            <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-300 to-green-500">
+              AGRO.GROW
+            </h1>
           </div>
 
-          <p className="text-2xl md:text-4xl font-bold text-white mb-4 animate-slideUp neon-text-green">
-            Potenciá tu Cultivo
-          </p>
-
-          <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-3xl mx-auto animate-fadeIn-delayed">
-            Los mejores insumos para cultivo indoor y outdoor. Tecnología de punta, resultados extraordinarios.
+          <p className="text-lg md:text-xl text-green-400 mb-8 max-w-3xl mx-auto animate-fadeIn-delayed">
+            EL RINCON DEL CULTIVADOR
           </p>
 
           <div className="flex justify-center items-center animate-fadeIn-delayed-2">
             <Link
               href="/productos"
-              className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg rounded-xl overflow-hidden transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-green-500/50 glow-button"
+              className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg rounded-xl overflow-hidden transition-all duration-300 hover:scale-110"
             >
               <span className="relative z-10">Explorar Productos</span>
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
