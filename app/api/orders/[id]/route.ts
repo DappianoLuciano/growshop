@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
+import { sendOrderConfirmationEmail } from '@/lib/email/send-order-confirmation'
 
 export async function GET(
   request: NextRequest,
@@ -103,6 +104,50 @@ export async function PATCH(
     })
 
     console.log('✅ Orden actualizada:', updatedOrder.orderNumber)
+    console.log('📧 Verificando envío de email...')
+    console.log('   - paymentStatus recibido:', paymentStatus)
+    console.log('   - Email del cliente:', updatedOrder.customerEmail)
+
+    // Si el pago fue aprobado, enviar email de confirmación
+    if (paymentStatus === 'APPROVED' && updatedOrder.customerEmail) {
+      console.log('📧 Iniciando envío de email de confirmación...')
+      try {
+        const emailData = {
+          to: updatedOrder.customerEmail,
+          orderNumber: updatedOrder.orderNumber,
+          customerName: updatedOrder.customerName,
+          customerEmail: updatedOrder.customerEmail,
+          customerPhone: updatedOrder.customerPhone,
+          shippingType: updatedOrder.shippingType,
+          address: updatedOrder.address,
+          city: updatedOrder.city,
+          province: updatedOrder.province,
+          items: updatedOrder.items.map(item => ({
+            productName: item.productName,
+            quantity: item.quantity,
+            price: item.price.toNumber(),
+            subtotal: item.subtotal.toNumber(),
+          })),
+          subtotal: updatedOrder.subtotal.toNumber(),
+          total: updatedOrder.total.toNumber(),
+          notes: updatedOrder.notes,
+        }
+        console.log('📧 Datos del email:', JSON.stringify(emailData, null, 2))
+
+        await sendOrderConfirmationEmail(emailData)
+        console.log('✅ Email de confirmación enviado exitosamente a:', updatedOrder.customerEmail)
+      } catch (emailError: any) {
+        console.error('❌ Error al enviar email de confirmación:', emailError)
+        console.error('❌ Detalles del error:', emailError.message)
+        console.error('❌ Stack:', emailError.stack)
+        // No fallar la actualización si el email falla
+      }
+    } else {
+      console.log('⚠️ Email NO enviado. Razón:')
+      console.log('   - paymentStatus === "APPROVED"?', paymentStatus === 'APPROVED')
+      console.log('   - Tiene email?', !!updatedOrder.customerEmail)
+    }
+
     return NextResponse.json(updatedOrder)
   } catch (error: any) {
     console.error('Error al actualizar orden:', error)
