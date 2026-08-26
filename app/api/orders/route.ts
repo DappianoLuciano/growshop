@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
+import { auth } from '@/lib/auth/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,6 +74,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  // Verificar autenticación - información sensible de clientes
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
   try {
     const orders = await prisma.order.findMany({
       include: {

@@ -1,12 +1,16 @@
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
 import SessionProvider from '@/components/admin/SessionProvider'
+import { requireAuth } from '@/lib/auth/require-auth'
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Verificar autenticación antes de renderizar
+  await requireAuth()
+
   return (
     <SessionProvider>
       <div className="bg-black min-h-screen">

@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
+import { auth } from '@/lib/auth/auth'
 
 export async function POST(request: NextRequest) {
+  // Verificar autenticación
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
-    console.log('📦 Datos recibidos:', JSON.stringify(body, null, 2))
+
+    // Solo loguear en desarrollo
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('📦 Datos recibidos:', JSON.stringify(body, null, 2))
+    }
 
     const { name, marca, sku, categoryId, price, stock, description, images, isActive, isFeatured, isOnSale, salePrice, capacity, size, power } = body
 
@@ -87,6 +98,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  // Verificar autenticación
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
   try {
     const products = await prisma.product.findMany({
       include: {

@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
+import { auth } from '@/lib/auth/auth'
 
 export async function POST(request: NextRequest) {
+  // Verificar autenticación - solo admin puede crear
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { name, description, color } = body

@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
+import { auth } from '@/lib/auth/auth'
 
 export async function GET() {
+  // Verificar autenticación - información sensible
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
   try {
     const [
       totalProducts,
