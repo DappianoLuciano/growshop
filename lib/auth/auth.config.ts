@@ -4,6 +4,7 @@ import { compare } from 'bcryptjs'
 import { prisma } from '@/lib/db/prisma'
 
 export const authConfig: NextAuthConfig = {
+  trustHost: true, // Necesario para Vercel
   providers: [
     CredentialsProvider({
       name: 'Credentials',
