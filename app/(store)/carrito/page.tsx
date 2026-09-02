@@ -57,49 +57,62 @@ export default function CarritoPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
-              {items.map((item) => (
-                <div
-                  key={item.variantId}
-                  className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 hover:border-green-500/50 transition-all"
-                >
-                  <div className="flex gap-4">
-                    <Link
-                      href={`/productos/${item.productSlug}`}
-                      className="relative w-24 h-24 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0"
-                    >
-                      {item.image ? (
-                        <Image src={item.image} alt={item.productName} fill className="object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
-                          Sin imagen
-                        </div>
-                      )}
-                    </Link>
+              {items.map((item) => {
+                const itemId = item.variantId || item.comboId || ''
+                const itemLink = item.isCombo ? `/combos/${item.comboSlug}` : `/productos/${item.productSlug}`
 
-                    <div className="flex-1 min-w-0">
-                      <Link href={`/productos/${item.productSlug}`} className="font-bold text-white hover:text-green-400 transition-colors line-clamp-2">
-                        {item.productName}
+                return (
+                  <div
+                    key={itemId}
+                    className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 hover:border-green-500/50 transition-all"
+                  >
+                    <div className="flex gap-4">
+                      <Link
+                        href={itemLink}
+                        className="relative w-24 h-24 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0"
+                      >
+                        {item.image ? (
+                          <Image src={item.image} alt={item.productName} fill className="object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
+                            Sin imagen
+                          </div>
+                        )}
                       </Link>
 
-                      {item.productBrand && <p className="text-sm text-gray-400">{item.productBrand}</p>}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start gap-2">
+                          <Link href={itemLink} className="flex-1 font-bold text-white hover:text-green-400 transition-colors line-clamp-2">
+                            {item.productName}
+                          </Link>
+                          {item.isCombo && (
+                            <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold flex-shrink-0">
+                              COMBO
+                            </span>
+                          )}
+                        </div>
 
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {item.capacity && <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-300">{item.capacity}</span>}
-                        {item.size && <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-300">{item.size}</span>}
-                        {item.power && <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-300">{item.power}</span>}
-                      </div>
+                        {item.productBrand && <p className="text-sm text-gray-400">{item.productBrand}</p>}
 
-                      <div className="mt-3 flex items-center justify-between">
-                        <span className="text-lg font-black text-green-400">
-                          ${(item.price * item.quantity).toLocaleString('es-AR')}
-                        </span>
+                        {!item.isCombo && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {item.capacity && <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-300">{item.capacity}</span>}
+                            {item.size && <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-300">{item.size}</span>}
+                            {item.power && <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-300">{item.power}</span>}
+                          </div>
+                        )}
 
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} className="p-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded transition-all" disabled={item.quantity <= 1}>
-                            <Minus className="w-4 h-4" />
-                          </button>
+                        <div className="mt-3 flex items-center justify-between">
+                          <span className="text-lg font-black text-green-400">
+                            ${(item.price * item.quantity).toLocaleString('es-AR')}
+                          </span>
+
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => updateQuantity(itemId, item.quantity - 1)} className="p-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded transition-all" disabled={item.quantity <= 1}>
+                              <Minus className="w-4 h-4" />
+                            </button>
                           <span className="w-12 text-center font-semibold text-white">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.variantId, item.quantity + 1)} className="p-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded transition-all" disabled={item.quantity >= item.maxStock}>
+                          <button onClick={() => updateQuantity(itemId, item.quantity + 1)} className="p-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded transition-all" disabled={item.quantity >= item.maxStock}>
                             <Plus className="w-4 h-4" />
                           </button>
                         </div>
@@ -108,12 +121,13 @@ export default function CarritoPage() {
                       {item.quantity >= item.maxStock && <p className="text-xs text-yellow-400 mt-1">Stock máximo alcanzado</p>}
                     </div>
 
-                    <button onClick={() => removeItem(item.variantId)} className="p-2 text-gray-400 hover:text-red-500 transition-colors self-start">
+                    <button onClick={() => removeItem(itemId)} className="p-2 text-gray-400 hover:text-red-500 transition-colors self-start">
                       <Trash2 className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
 
             <div className="lg:col-span-1">

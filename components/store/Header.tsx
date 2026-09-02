@@ -224,11 +224,11 @@ export default function Header() {
                 <NavLink href="/productos">
                   PRODUCTOS
                 </NavLink>
+                <NavLink href="/combos">
+                  COMBOS
+                </NavLink>
                 <NavLink href="/ofertas" special>
                   OFERTAS
-                </NavLink>
-                <NavLink href="/contacto">
-                  CONTACTO
                 </NavLink>
               </nav>
 
@@ -329,6 +329,17 @@ export default function Header() {
             PRODUCTOS
           </Link>
           <Link
+            href="/combos"
+            onClick={closeMenu}
+            className={`block px-6 py-3 text-base font-semibold rounded-xl transition-all ${
+              isActive('/combos')
+                ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-white border-2 border-green-500'
+                : 'text-gray-300 hover:bg-gray-800 border-2 border-transparent'
+            }`}
+          >
+            COMBOS
+          </Link>
+          <Link
             href="/ofertas"
             onClick={closeMenu}
             className={`block px-6 py-3 text-base font-semibold rounded-xl transition-all ${
@@ -341,17 +352,6 @@ export default function Header() {
               OFERTAS
               <Sparkles className="w-4 h-4 text-yellow-400" />
             </div>
-          </Link>
-          <Link
-            href="/contacto"
-            onClick={closeMenu}
-            className={`block px-6 py-3 text-base font-semibold rounded-xl transition-all ${
-              isActive('/contacto')
-                ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-white border-2 border-green-500'
-                : 'text-gray-300 hover:bg-gray-800 border-2 border-transparent'
-            }`}
-          >
-            CONTACTO
           </Link>
           <Link
             href="/carrito"

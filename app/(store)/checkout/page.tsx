@@ -157,12 +157,18 @@ export default function CheckoutPage() {
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
               <h2 className="text-xl font-bold text-white mb-4">Resumen</h2>
               <div className="space-y-2 mb-4">
-                {items.map(item => (
-                  <div key={item.variantId} className="flex justify-between text-sm">
-                    <span className="text-gray-300">{item.productName} x{item.quantity}</span>
-                    <span className="text-white font-semibold">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
-                  </div>
-                ))}
+                {items.map(item => {
+                  const itemId = item.variantId || item.comboId || ''
+                  return (
+                    <div key={itemId} className="flex justify-between text-sm">
+                      <span className="text-gray-300">
+                        {item.productName} x{item.quantity}
+                        {item.isCombo && <span className="ml-1 text-xs text-green-400">(COMBO)</span>}
+                      </span>
+                      <span className="text-white font-semibold">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
+                    </div>
+                  )
+                })}
               </div>
               <div className="border-t border-gray-700 pt-4 flex justify-between">
                 <span className="font-bold text-white">Total</span>

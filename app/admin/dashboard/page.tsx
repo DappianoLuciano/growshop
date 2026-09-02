@@ -1,7 +1,8 @@
 'use client'
 
-import { Package, ShoppingCart, FolderTree, DollarSign, Loader2 } from 'lucide-react'
+import { Package, ShoppingCart, FolderTree, DollarSign, Loader2, AlertTriangle, Clock, CheckCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 interface Stats {
   totalProducts: number
@@ -12,12 +13,32 @@ interface Stats {
   approvedOrders: number
 }
 
+interface RecentOrder {
+  id: string
+  orderNumber: string
+  customerName: string
+  total: number
+  paymentStatus: string
+  createdAt: string
+}
+
+interface LowStockProduct {
+  id: string
+  name: string
+  stock: number
+  slug: string
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
+  const [lowStockProducts, setLowStockProducts] = useState<LowStockProduct[]>([])
+  const [todaySales, setTodaySales] = useState(0)
 
   useEffect(() => {
     fetchStats()
+    fetchRecentActivity()
   }, [])
 
   const fetchStats = async () => {
@@ -31,6 +52,20 @@ export default function DashboardPage() {
       console.error('Error al cargar estadísticas:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchRecentActivity = async () => {
+    try {
+      const response = await fetch('/api/admin/recent-activity')
+      if (response.ok) {
+        const data = await response.json()
+        setRecentOrders(data.recentOrders || [])
+        setLowStockProducts(data.lowStockProducts || [])
+        setTodaySales(data.todaySales || 0)
+      }
+    } catch (error) {
+      console.error('Error al cargar actividad reciente:', error)
     }
   }
 
@@ -138,10 +173,103 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <h2 className="text-xl font-bold text-white mb-4">Actividad Reciente</h2>
-        <div className="text-center py-8">
-          <p className="text-gray-400">No hay actividad reciente</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Últimas Órdenes */}
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white">Últimas Órdenes</h2>
+            <Link href="/admin/ordenes" className="text-sm text-green-400 hover:text-green-300">
+              Ver todas
+            </Link>
+          </div>
+          {recentOrders.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-400">No hay órdenes recientes</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentOrders.map((order) => (
+                <Link
+                  key={order.id}
+                  href={`/admin/ordenes/${order.id}`}
+                  className="block p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-all"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-mono text-gray-300">{order.orderNumber}</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      order.paymentStatus === 'PENDING'
+                        ? 'bg-yellow-500/20 text-yellow-400'
+                        : 'bg-green-500/20 text-green-400'
+                    }`}>
+                      {order.paymentStatus === 'PENDING' ? 'Pendiente' : 'Aprobado'}
+                    </span>
+                  </div>
+                  <p className="text-white font-semibold mb-1">{order.customerName}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-400">
+                      {new Date(order.createdAt).toLocaleDateString('es-AR')}
+                    </span>
+                    <span className="text-green-400 font-bold">
+                      ${parseFloat(order.total.toString()).toLocaleString('es-AR')}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Stock Bajo y Ventas del Día */}
+        <div className="space-y-6">
+          {/* Ventas del Día */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <h2 className="text-xl font-bold text-white mb-4">Ventas de Hoy</h2>
+            <div className="flex items-center gap-4">
+              <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
+                <DollarSign className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Total vendido</p>
+                <p className="text-3xl font-black text-white">
+                  ${todaySales.toLocaleString('es-AR')}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Productos con Stock Bajo */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              <h2 className="text-xl font-bold text-white">Stock Bajo</h2>
+            </div>
+            {lowStockProducts.length === 0 ? (
+              <div className="text-center py-4">
+                <p className="text-gray-400 text-sm">Todo el stock está bien</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {lowStockProducts.map((product) => (
+                  <Link
+                    key={product.id}
+                    href={`/admin/productos/${product.id}`}
+                    className="block p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-all"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-white font-semibold text-sm">{product.name}</span>
+                      <span className={`px-2 py-1 rounded text-xs font-bold ${
+                        product.stock === 0
+                          ? 'bg-red-500/20 text-red-400'
+                          : 'bg-yellow-500/20 text-yellow-400'
+                      }`}>
+                        {product.stock} unidades
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

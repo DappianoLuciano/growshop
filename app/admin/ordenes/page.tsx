@@ -133,7 +133,7 @@ export default function OrdenesAdminPage() {
         </div>
       </div>
 
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 sticky top-16 z-20 bg-black pt-2 -mt-2">
         <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap ${filter === 'all' ? 'bg-green-500 text-white' : 'bg-gray-800 text-gray-300'}`}>
           Todas
         </button>
@@ -147,17 +147,17 @@ export default function OrdenesAdminPage() {
 
       {/* Desktop Table */}
       <div className="hidden lg:block bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div>
+          <table className="w-full table-fixed">
             <thead className="bg-gray-800">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Orden</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Cliente</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Contacto</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Total</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Estado</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Fecha</th>
-                <th className="px-6 py-4 text-right text-sm font-bold text-gray-300">Acciones</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[180px]">Orden</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[140px]">Cliente</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[200px]">Contacto</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[120px]">Total</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[110px]">Estado</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[100px]">Fecha</th>
+                <th className="px-6 py-4 text-right text-sm font-bold text-gray-300 w-[100px]">Acciones</th>
               </tr>
             </thead>
             <tbody>

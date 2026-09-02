@@ -45,7 +45,8 @@ export async function POST(request: NextRequest) {
         total,
         items: {
           create: items.map((item: any) => ({
-            variantId: item.variantId,
+            variantId: item.variantId || null,
+            comboId: item.comboId || null,
             productName: item.productName,
             quantity: item.quantity,
             price: item.price,
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
         items: {
           include: {
             variant: true,
+            combo: true,
           },
         },
       },
@@ -90,6 +92,7 @@ export async function GET() {
                 product: true,
               },
             },
+            combo: true,
           },
         },
       },

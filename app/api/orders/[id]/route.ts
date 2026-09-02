@@ -82,16 +82,40 @@ export async function PATCH(
         return NextResponse.json({ error: 'El pago ya fue aprobado' }, { status: 400 })
       }
 
-      // Descontar stock de cada variante
+      // Descontar stock
       for (const item of order.items) {
-        await prisma.productVariant.update({
-          where: { id: item.variantId },
-          data: {
-            stock: {
-              decrement: item.quantity,
+        if (item.comboId) {
+          // Si es un combo, descontar stock de cada producto que lo compone
+          const combo = await prisma.combo.findUnique({
+            where: { id: item.comboId },
+            include: {
+              products: true,
             },
-          },
-        })
+          })
+
+          if (combo) {
+            for (const comboProduct of combo.products) {
+              await prisma.productVariant.update({
+                where: { id: comboProduct.variantId },
+                data: {
+                  stock: {
+                    decrement: comboProduct.quantity * item.quantity,
+                  },
+                },
+              })
+            }
+          }
+        } else if (item.variantId) {
+          // Si es un producto individual, descontar stock de la variante
+          await prisma.productVariant.update({
+            where: { id: item.variantId },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          })
+        }
       }
     }
 
@@ -198,14 +222,38 @@ export async function DELETE(
     // Si la orden está aprobada, devolver el stock antes de eliminar
     if (order.paymentStatus === 'APPROVED') {
       for (const item of order.items) {
-        await prisma.productVariant.update({
-          where: { id: item.variantId },
-          data: {
-            stock: {
-              increment: item.quantity,
+        if (item.comboId) {
+          // Si es un combo, devolver stock de cada producto que lo compone
+          const combo = await prisma.combo.findUnique({
+            where: { id: item.comboId },
+            include: {
+              products: true,
             },
-          },
-        })
+          })
+
+          if (combo) {
+            for (const comboProduct of combo.products) {
+              await prisma.productVariant.update({
+                where: { id: comboProduct.variantId },
+                data: {
+                  stock: {
+                    increment: comboProduct.quantity * item.quantity,
+                  },
+                },
+              })
+            }
+          }
+        } else if (item.variantId) {
+          // Si es un producto individual, devolver stock de la variante
+          await prisma.productVariant.update({
+            where: { id: item.variantId },
+            data: {
+              stock: {
+                increment: item.quantity,
+              },
+            },
+          })
+        }
       }
     }
 
