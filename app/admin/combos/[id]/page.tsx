@@ -25,6 +25,7 @@ interface Product {
   id: string
   name: string
   brand: string | null
+  isActive: boolean
   images: { url: string; alt: string | null }[]
   variants: ProductVariant[]
 }
