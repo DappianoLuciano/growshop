@@ -10,6 +10,7 @@ interface ComboProduct {
   id: string
   quantity: number
   variant: {
+    stock: number
     product: {
       name: string
       brand: string | null
