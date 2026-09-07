@@ -14,7 +14,7 @@ interface SendOrderConfirmationEmailParams {
   customerName: string
   customerEmail: string
   customerPhone: string
-  shippingType: 'SHIPPING' | 'PICKUP'
+  shippingType: 'SHIPPING' | 'PICKUP' | 'ARRANGEMENT'
   address?: string | null
   city?: string | null
   province?: string | null

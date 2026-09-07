@@ -10,7 +10,7 @@ interface OrderConfirmationEmailProps {
   customerName: string
   customerEmail: string
   customerPhone: string
-  shippingType: 'SHIPPING' | 'PICKUP'
+  shippingType: 'SHIPPING' | 'PICKUP' | 'ARRANGEMENT'
   address?: string | null
   city?: string | null
   province?: string | null
@@ -107,6 +107,10 @@ export function generateOrderConfirmationEmail(props: OrderConfirmationEmailProp
                 <p style="margin: 0; color: #d1d5db; font-size: 14px; line-height: 1.6;">
                   ${address}<br>
                   ${city}, ${province}
+                </p>
+              ` : shippingType === 'ARRANGEMENT' ? `
+                <p style="margin: 0; color: #d1d5db; font-size: 14px; line-height: 1.6;">
+                  <strong style="color: #16a34a;">A coordinar con el vendedor</strong>
                 </p>
               ` : `
                 <p style="margin: 0; color: #d1d5db; font-size: 14px; line-height: 1.6;">
