@@ -11,11 +11,14 @@ export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart()
   const [loading, setLoading] = useState(false)
   const [checkoutComplete, setCheckoutComplete] = useState(false)
+  const [calculatingShipping, setCalculatingShipping] = useState(false)
+  const [shippingRates, setShippingRates] = useState<any[]>([])
+  const [selectedShipping, setSelectedShipping] = useState<any>(null)
   const [formData, setFormData] = useState({
     customerName: '',
     customerEmail: '',
     customerPhone: '',
-    shippingType: 'SHIPPING' as 'SHIPPING' | 'PICKUP',
+    shippingType: 'SHIPPING' as 'SHIPPING' | 'PICKUP' | 'ARRANGEMENT',
     address: '',
     city: '',
     province: '',
@@ -28,6 +31,59 @@ export default function CheckoutPage() {
       router.push('/carrito')
     }
   }, [items.length, loading, checkoutComplete, router])
+
+  const calculateShipping = async () => {
+    if (!formData.postalCode || formData.postalCode.length < 4) {
+      alert('Por favor ingresa un código postal válido')
+      return
+    }
+
+    setCalculatingShipping(true)
+    try {
+      const response = await fetch('/api/shipments/rates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          origenCP: process.env.NEXT_PUBLIC_STORE_POSTAL_CODE || '1884', // Berazategui
+          destinoCP: formData.postalCode,
+          peso: 1000, // 1kg default
+          valorDeclarado: totalPrice,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.rates) {
+          // APLICAR MARKUP DEL 100% (DOBLE) AL PRECIO QUE VE EL CLIENTE
+          const ratesWithMarkup = data.rates.map((rate: any) => ({
+            ...rate,
+            precioReal: rate.precio, // Guardar precio real (costo del correo)
+            precio: rate.precio * 2, // Precio con 100% markup (lo que paga el cliente)
+          }))
+          setShippingRates(ratesWithMarkup)
+          // Auto-seleccionar la opción más económica
+          if (ratesWithMarkup.length > 0) {
+            setSelectedShipping(ratesWithMarkup[0])
+          }
+        } else {
+          alert('No se pudieron obtener las tarifas de envío')
+        }
+      }
+    } catch (error) {
+      console.error('Error al calcular envío:', error)
+      alert('Error al calcular envío')
+    } finally {
+      setCalculatingShipping(false)
+    }
+  }
+
+  const finalTotal = selectedShipping && formData.shippingType === 'SHIPPING'
+    ? totalPrice + selectedShipping.precio // Ya incluye el markup del 100%
+    : totalPrice
+
+  const realShippingCost = selectedShipping && formData.shippingType === 'SHIPPING'
+    ? selectedShipping.precioReal || selectedShipping.precio / 2 // Costo real sin markup
+    : 0
 
   if (items.length === 0) {
     return null
@@ -45,12 +101,14 @@ export default function CheckoutPage() {
           ...formData,
           items: items.map(item => ({
             variantId: item.variantId,
+            comboId: item.comboId,
             productName: item.productName,
             quantity: item.quantity,
             price: item.price,
           })),
           subtotal: totalPrice,
-          total: totalPrice,
+          shippingCost: selectedShipping && formData.shippingType === 'SHIPPING' ? selectedShipping.precio : 0, // Precio con markup que paga el cliente
+          total: finalTotal,
         }),
       })
 
@@ -78,18 +136,24 @@ export default function CheckoutPage() {
   }
 
   const generateWhatsAppMessage = (order: any) => {
-    let msg = `NUEVO PEDIDO - ${order.orderNumber}\n\n`
-    msg += `Cliente: ${formData.customerName}\n${formData.customerEmail}\n${formData.customerPhone}\n\nProductos:\n`
+    let msg = `🛒 NUEVO PEDIDO - ${order.orderNumber}\n\n`
+    msg += `👤 Cliente: ${formData.customerName}\n📧 ${formData.customerEmail}\n📱 ${formData.customerPhone}\n\n📦 Productos:\n`
     items.forEach((item, i) => {
       msg += `${i + 1}. ${item.productName} x${item.quantity} - $${(item.price * item.quantity).toLocaleString('es-AR')}\n`
     })
-    msg += `\nTotal: $${totalPrice.toLocaleString('es-AR')}\n\n`
+    msg += `\n💰 Subtotal: $${totalPrice.toLocaleString('es-AR')}\n`
     if (formData.shippingType === 'SHIPPING') {
-      msg += `Envío: ${formData.address}, ${formData.city}, ${formData.province}\n`
-    } else {
-      msg += `Retiro en local\n`
+      msg += `📍 Envío a: ${formData.address}, ${formData.city}, ${formData.province} (CP: ${formData.postalCode})\n`
+      if (selectedShipping) {
+        msg += `🚚 Tipo: ${selectedShipping.servicio} - $${selectedShipping.precio.toLocaleString('es-AR')}\n`
+      }
+    } else if (formData.shippingType === 'PICKUP') {
+      msg += `🤝 Punto de encuentro\n`
+    } else if (formData.shippingType === 'ARRANGEMENT') {
+      msg += `⚡ Envío express (Zona Sur y CABA)\n`
     }
-    if (formData.notes) msg += `\nNotas: ${formData.notes}`
+    msg += `\n💵 TOTAL: $${finalTotal.toLocaleString('es-AR')}\n`
+    if (formData.notes) msg += `\n📝 Notas: ${formData.notes}`
     return msg
   }
   return (
@@ -123,30 +187,93 @@ export default function CheckoutPage() {
 
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
               <h2 className="text-xl font-bold text-white mb-4">Método de Entrega</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${formData.shippingType === 'SHIPPING' ? 'border-green-500 bg-green-500/10' : 'border-gray-700'}`}>
                   <input type="radio" name="shipping" value="SHIPPING" checked={formData.shippingType === 'SHIPPING'} onChange={() => setFormData({ ...formData, shippingType: 'SHIPPING' })} className="w-5 h-5 accent-green-500" />
                   <div><p className="font-semibold text-white">Envío a domicilio</p></div>
                 </label>
                 <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${formData.shippingType === 'PICKUP' ? 'border-green-500 bg-green-500/10' : 'border-gray-700'}`}>
                   <input type="radio" name="shipping" value="PICKUP" checked={formData.shippingType === 'PICKUP'} onChange={() => setFormData({ ...formData, shippingType: 'PICKUP' })} className="w-5 h-5 accent-green-500" />
-                  <div><p className="font-semibold text-white">Retiro en local</p></div>
+                  <div><p className="font-semibold text-white">Punto de encuentro</p></div>
+                </label>
+                <label className={`flex flex-col gap-2 p-4 border-2 rounded-xl cursor-pointer transition-all ${formData.shippingType === 'ARRANGEMENT' ? 'border-green-500 bg-green-500/10' : 'border-gray-700'}`}>
+                  <div className="flex items-center gap-3">
+                    <input type="radio" name="shipping" value="ARRANGEMENT" checked={formData.shippingType === 'ARRANGEMENT'} onChange={() => setFormData({ ...formData, shippingType: 'ARRANGEMENT' })} className="w-5 h-5 accent-green-500" />
+                    <p className="font-semibold text-white">Envío express</p>
+                  </div>
+                  <p className="text-xs text-gray-400 ml-8">Zona Sur y CABA</p>
                 </label>
               </div>
               {formData.shippingType === 'SHIPPING' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">Dirección *</label>
-                    <input type="text" required value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:border-green-500" />
+                <div className="space-y-4 mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">Dirección *</label>
+                      <input type="text" required value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:border-green-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">Ciudad *</label>
+                      <input type="text" required value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:border-green-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">Provincia *</label>
+                      <input type="text" required value={formData.province} onChange={(e) => setFormData({ ...formData, province: e.target.value })} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:border-green-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">Código Postal *</label>
+                      <input type="text" required value={formData.postalCode} onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:border-green-500" placeholder="1425" />
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        type="button"
+                        onClick={calculateShipping}
+                        disabled={calculatingShipping || !formData.postalCode}
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {calculatingShipping ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Calculando...
+                          </span>
+                        ) : (
+                          'Calcular Envío'
+                        )}
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">Ciudad *</label>
-                    <input type="text" required value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:border-green-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">Provincia *</label>
-                    <input type="text" required value={formData.province} onChange={(e) => setFormData({ ...formData, province: e.target.value })} className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:border-green-500" />
-                  </div>
+
+                  {shippingRates.length > 0 && (
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                      <h3 className="text-sm font-bold text-white mb-3">Opciones de Envío</h3>
+                      <div className="space-y-2">
+                        {shippingRates.map((rate: any, index: number) => (
+                          <label
+                            key={index}
+                            className={`flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                              selectedShipping?.servicio === rate.servicio
+                                ? 'border-green-500 bg-green-500/10'
+                                : 'border-gray-700 hover:border-gray-600'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="radio"
+                                name="shippingService"
+                                checked={selectedShipping?.servicio === rate.servicio}
+                                onChange={() => setSelectedShipping(rate)}
+                                className="w-4 h-4 accent-green-500"
+                              />
+                              <div>
+                                <p className="font-semibold text-white capitalize">{rate.servicio}</p>
+                                <p className="text-xs text-gray-400">{rate.diasEntrega} días hábiles</p>
+                              </div>
+                            </div>
+                            <span className="font-bold text-green-400">${rate.precio.toLocaleString('es-AR')}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -170,9 +297,21 @@ export default function CheckoutPage() {
                   )
                 })}
               </div>
-              <div className="border-t border-gray-700 pt-4 flex justify-between">
-                <span className="font-bold text-white">Total</span>
-                <span className="font-black text-2xl text-green-400">${totalPrice.toLocaleString('es-AR')}</span>
+              <div className="border-t border-gray-700 pt-4 space-y-2">
+                <div className="flex justify-between text-gray-300">
+                  <span>Subtotal</span>
+                  <span>${totalPrice.toLocaleString('es-AR')}</span>
+                </div>
+                {selectedShipping && formData.shippingType === 'SHIPPING' && (
+                  <div className="flex justify-between text-gray-300">
+                    <span>Envío ({selectedShipping.servicio})</span>
+                    <span>${selectedShipping.precio.toLocaleString('es-AR')}</span>
+                  </div>
+                )}
+                <div className="border-t border-gray-700 pt-2 flex justify-between">
+                  <span className="font-bold text-white">Total</span>
+                  <span className="font-black text-2xl text-green-400">${finalTotal.toLocaleString('es-AR')}</span>
+                </div>
               </div>
             </div>
             <button type="submit" disabled={loading} className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:scale-105 transition-all disabled:opacity-50 flex items-center justify-center gap-2">

@@ -7,7 +7,7 @@ interface ConfirmModalProps {
   onClose: () => void
   onConfirm: () => void
   title: string
-  message: string
+  message: React.ReactNode
   confirmText?: string
   cancelText?: string
   type?: 'danger' | 'success' | 'warning'
@@ -59,7 +59,7 @@ export default function ConfirmModal({
             {icons[type]}
           </div>
           <h3 className="text-2xl font-black text-white mb-2">{title}</h3>
-          <p className="text-gray-300">{message}</p>
+          <div className="text-gray-300">{message}</div>
         </div>
 
         <div className="flex gap-3">

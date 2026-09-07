@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useState, useEffect } from 'react'
-import { Package, Eye, Check, Loader2, Trash2 } from 'lucide-react'
+import { Package, Check, Loader2, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import ConfirmModal from '@/components/admin/ConfirmModal'
 
@@ -15,6 +15,9 @@ interface Order {
   status: string
   paymentStatus: string
   shippingType: string
+  trackingNumber?: string
+  shippingCost?: number
+  ocaTrackingData?: any
   createdAt: string
   items: any[]
 }
@@ -151,56 +154,68 @@ export default function OrdenesAdminPage() {
           <table className="w-full table-fixed">
             <thead className="bg-gray-800">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[180px]">Orden</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[140px]">Cliente</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[200px]">Contacto</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[120px]">Total</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[110px]">Estado</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[100px]">Fecha</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[160px]">Orden</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[130px]">Cliente</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[180px]">Contacto</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[100px]">Total</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[130px]">Envío</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[100px]">Estado</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[90px]">Fecha</th>
                 <th className="px-6 py-4 text-right text-sm font-bold text-gray-300 w-[100px]">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400">No hay órdenes</td>
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-400">No hay órdenes</td>
                 </tr>
               ) : (
                 filteredOrders.map((order) => (
-                  <tr key={order.id} className="border-t border-gray-800 hover:bg-gray-800/50">
-                    <td className="px-6 py-4">
+                  <tr key={order.id} className="border-t border-gray-800 hover:bg-gray-800/50 cursor-pointer transition-colors">
+                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <p className="font-mono text-sm text-white">{order.orderNumber}</p>
                       <p className="text-xs text-gray-400">{order.items?.length || 0} items</p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <p className="text-white font-semibold">{order.customerName}</p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <p className="text-sm text-gray-300">{order.customerPhone}</p>
                       <p className="text-xs text-gray-400">{order.customerEmail}</p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <span className="text-white font-bold">${parseFloat(order.total.toString()).toLocaleString('es-AR')}</span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
+                      {order.shippingType === 'SHIPPING' ? (
+                        <div>
+                          <p className="text-xs text-blue-400 font-semibold">🚚 Envío</p>
+                          {order.trackingNumber ? (
+                            <p className="text-xs text-green-400 font-mono">{order.trackingNumber}</p>
+                          ) : (
+                            <p className="text-xs text-gray-400">Sin generar</p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-orange-400 font-semibold">🏪 Retiro</p>
+                      )}
+                    </td>
+                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(order.paymentStatus)}`}>
                         {order.paymentStatus}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <p className="text-sm text-gray-300">{new Date(order.createdAt).toLocaleDateString('es-AR')}</p>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        <Link href={`/admin/ordenes/${order.id}`} className="p-2 text-gray-400 hover:text-green-400">
-                          <Eye className="w-4 h-4" />
-                        </Link>
                         {order.paymentStatus === 'PENDING' && (
-                          <button onClick={() => openApproveModal(order.id)} className="p-2 text-gray-400 hover:text-green-500">
+                          <button onClick={(e) => { e.stopPropagation(); openApproveModal(order.id); }} className="p-2 text-gray-400 hover:text-green-500">
                             <Check className="w-4 h-4" />
                           </button>
                         )}
-                        <button onClick={() => openDeleteModal(order.id)} className="p-2 text-gray-400 hover:text-red-500">
+                        <button onClick={(e) => { e.stopPropagation(); openDeleteModal(order.id); }} className="p-2 text-gray-400 hover:text-red-500">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -246,6 +261,19 @@ export default function OrdenesAdminPage() {
                   <p className="text-xs text-gray-400 mb-1">Total</p>
                   <p className="text-white font-bold text-lg">${parseFloat(order.total.toString()).toLocaleString('es-AR')}</p>
                 </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Envío</p>
+                  {order.shippingType === 'SHIPPING' ? (
+                    <div>
+                      <p className="text-sm text-blue-400 font-semibold">🚚 A domicilio</p>
+                      {order.trackingNumber && (
+                        <p className="text-xs text-green-400 font-mono mt-1">{order.trackingNumber}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-orange-400 font-semibold">🏪 Retiro en local</p>
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-2">
@@ -253,7 +281,6 @@ export default function OrdenesAdminPage() {
                   href={`/admin/ordenes/${order.id}`}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:scale-105 transition-all"
                 >
-                  <Eye className="w-4 h-4" />
                   Ver Detalle
                 </Link>
                 {order.paymentStatus === 'PENDING' && (
