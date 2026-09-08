@@ -60,7 +60,7 @@ export default function HomePage() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-24 md:pt-32 pb-8 md:pb-16 flex items-center justify-center overflow-hidden z-10">
+      <section className="relative pt-36 md:pt-44 pb-8 md:pb-16 flex items-center justify-center overflow-hidden z-10">
 
         {/* Contenido */}
         <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">

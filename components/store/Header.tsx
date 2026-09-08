@@ -361,7 +361,11 @@ export default function Header() {
           <Link
             href="/carrito"
             onClick={closeMenu}
-            className="block px-6 py-3 text-base font-semibold rounded-xl text-gray-300 hover:bg-gray-800 border-2 border-transparent transition-all"
+            className={`block px-6 py-3 text-base font-semibold rounded-xl transition-all ${
+              isActive('/carrito')
+                ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-white border-2 border-green-500'
+                : 'text-gray-300 hover:bg-gray-800 border-2 border-transparent'
+            }`}
           >
             CARRITO {totalItems > 0 && `(${totalItems})`}
           </Link>
