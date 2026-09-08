@@ -10,9 +10,9 @@ export default function StoreLayout({
 }) {
   return (
     <CartProvider>
-      <div className="bg-black min-h-screen">
+      <div className="bg-black min-h-screen overflow-x-hidden">
         <Header />
-        <main>
+        <main className="overflow-x-hidden">
           {children}
         </main>
         <Footer />
