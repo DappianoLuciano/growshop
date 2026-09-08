@@ -159,12 +159,13 @@ export default function Header() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onBlur={() => setTimeout(() => setShowResults(false), 200)}
                   placeholder="Buscar..."
-                  className="w-full h-12 pl-9 md:pl-10 pr-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white text-sm md:text-base placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all duration-500 ease-in-out"
+                  className="w-full h-12 pl-9 md:pl-10 pr-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all duration-500 ease-in-out"
+                  style={{ fontSize: '16px' }}
                 />
 
                 {/* Dropdown de resultados */}
                 {showResults && searchResults.length > 0 && (
-                  <div className="absolute top-full mt-2 left-0 right-0 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 min-w-[320px]">
+                  <div className="absolute top-full mt-2 left-0 right-0 md:left-0 md:right-auto bg-gray-900 border border-gray-700 rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 w-full md:min-w-[380px]">
                     <div className="max-h-96 overflow-y-auto">
                       {searchResults.map((result) => {
                         const discount = result.isOnSale && result.salePrice
