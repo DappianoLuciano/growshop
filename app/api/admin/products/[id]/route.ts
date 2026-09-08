@@ -118,6 +118,43 @@ export async function DELETE(
   try {
     const { id } = await params
 
+    // Verificar si el producto tiene variantes con órdenes
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        variants: {
+          include: {
+            orderItems: true,
+            comboProducts: true,
+          },
+        },
+      },
+    })
+
+    if (!product) {
+      return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 })
+    }
+
+    // Verificar si hay órdenes asociadas
+    const hasOrders = product.variants.some((v) => v.orderItems.length > 0)
+    if (hasOrders) {
+      return NextResponse.json(
+        { error: 'No se puede eliminar: el producto tiene órdenes asociadas' },
+        { status: 400 }
+      )
+    }
+
+    // Verificar si está en algún combo
+    const hasComboProducts = product.variants.some((v) => v.comboProducts.length > 0)
+    if (hasComboProducts) {
+      return NextResponse.json(
+        { error: 'No se puede eliminar: el producto está en uno o más combos' },
+        { status: 400 }
+      )
+    }
+
+    // Si no tiene órdenes ni combos, eliminar el producto
+    // Las variantes e imágenes se eliminan en cascada
     await prisma.product.delete({
       where: { id },
     })

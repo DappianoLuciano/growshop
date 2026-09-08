@@ -225,9 +225,9 @@ function CategoryCarousel() {
   return (
     <>
       {/* Mobile: Scroll horizontal con swipe */}
-      <div className="md:hidden relative -mx-4 px-4">
+      <div className="md:hidden relative">
         {/* Carrusel Mobile con Scroll */}
-        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 px-4 -mx-4">
           {categories.map((category) => (
             <div key={category.id} className="flex-none w-[45%] snap-start">
               <FlipCard
@@ -462,8 +462,8 @@ function FeaturedProducts() {
   return (
     <>
       {/* Mobile: Scroll horizontal con swipe */}
-      <div className="md:hidden relative -mx-4 px-4">
-        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div className="md:hidden relative">
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 px-4 -mx-4">
           {products.map((product) => (
             <div key={product.id} className="flex-none w-[45%] snap-start">
               <FeaturedProductCard product={product} getTotalStock={getTotalStock} getProductPrice={getProductPrice} getDiscount={getDiscount} />
@@ -700,8 +700,8 @@ function OfferProducts() {
   return (
     <>
       {/* Mobile: Scroll horizontal con swipe */}
-      <div className="md:hidden relative -mx-4 px-4">
-        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div className="md:hidden relative">
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 px-4 -mx-4">
           {products.map((product) => {
             const discount = getDiscount(product)
             return (
