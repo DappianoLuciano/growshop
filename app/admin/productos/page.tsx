@@ -72,8 +72,10 @@ export default function ProductosAdminPage() {
       if (response.ok) {
         // Actualizar la lista eliminando el producto
         setProducts(products.filter(p => p.id !== id))
+        alert('Producto eliminado correctamente')
       } else {
-        alert('Error al eliminar el producto')
+        const errorData = await response.json()
+        alert(errorData.error || 'Error al eliminar el producto')
       }
     } catch (error) {
       console.error('Error:', error)
