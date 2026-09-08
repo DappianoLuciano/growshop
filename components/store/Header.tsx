@@ -72,7 +72,12 @@ export default function Header() {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
   const closeMenu = () => setIsMenuOpen(false)
-  const isActive = (path: string) => pathname === path || pathname?.startsWith(path)
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return pathname === '/'
+    }
+    return pathname === path || pathname?.startsWith(path + '/')
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
