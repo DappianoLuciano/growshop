@@ -370,3 +370,248 @@ select option {
 .hover-scale-extreme:hover {
   transform: scale(1.2) rotate(2deg);
 }
+
+/* ============= SCROLLBAR PERSONALIZADA ============= */
+
+/* Ocultar scrollbar pero mantener funcionalidad */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Scrollbar personalizada bonita */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #22c55e #1f2937;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #22c55e, #10b981);
+  border-radius: 10px;
+  border: 2px solid #1f2937;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #4ade80, #22c55e);
+}
+
+/* ============= RICH TEXT EDITOR (TipTap) ============= */
+
+/* Estilos base para el contenido del editor */
+.ProseMirror {
+  outline: none;
+  min-height: 150px;
+}
+
+.ProseMirror p {
+  margin-bottom: 0.75rem;
+}
+
+.ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+/* Encabezados */
+.ProseMirror h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #22c55e;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: #4ade80;
+}
+
+/* Negritas y cursivas */
+.ProseMirror strong {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.ProseMirror em {
+  font-style: italic;
+  color: #d1d5db;
+}
+
+/* Listas */
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.ProseMirror li {
+  margin-bottom: 0.25rem;
+  color: #ffffff;
+  display: list-item;
+}
+
+.ProseMirror li p {
+  margin-bottom: 0.25rem;
+}
+
+/* Citas */
+.ProseMirror blockquote {
+  border-left: 4px solid #22c55e;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #9ca3af;
+  background: rgba(34, 197, 94, 0.05);
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 0.75rem 1rem;
+}
+
+/* Enlaces */
+.ProseMirror a {
+  color: #4ade80;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror a:hover {
+  color: #22c55e;
+}
+
+/* Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #6b7280;
+  pointer-events: none;
+  height: 0;
+}
+
+/* ============= ESTILOS PARA VISTAS PÚBLICAS ============= */
+
+/* Contenedor principal */
+.prose {
+  color: #d1d5db;
+}
+
+/* Párrafos */
+.prose p {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* Encabezados */
+.prose h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #22c55e;
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: #4ade80;
+}
+
+/* Negritas y cursivas */
+.prose strong {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.prose em {
+  font-style: italic;
+  color: #d1d5db;
+}
+
+/* Listas - con mayor especificidad */
+.prose ul,
+.prose ol {
+  padding-left: 1.5rem !important;
+  margin-bottom: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.prose ul {
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+}
+
+.prose ol {
+  list-style-type: decimal !important;
+  list-style-position: outside !important;
+}
+
+.prose li {
+  margin-bottom: 0.25rem;
+  color: #d1d5db;
+  display: list-item !important;
+  padding-left: 0.25rem;
+}
+
+.prose li p {
+  margin-bottom: 0.25rem;
+  display: inline;
+}
+
+.prose ul ul,
+.prose ol ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Citas */
+.prose blockquote {
+  border-left: 4px solid #22c55e;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #9ca3af;
+  background: rgba(34, 197, 94, 0.05);
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 0.75rem 1rem;
+}
+
+/* Enlaces */
+.prose a {
+  color: #4ade80;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.prose a:hover {
+  color: #22c55e;
+}

@@ -81,7 +81,7 @@ export default function CombosAdminPage() {
   }
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-6 md:p-8 overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
         <div>
@@ -139,21 +139,21 @@ export default function CombosAdminPage() {
         <>
           {/* Desktop Table */}
           <div className="hidden lg:block bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="max-h-[calc(100vh-220px)] overflow-y-auto custom-scrollbar">
               <table className="w-full">
                 <thead className="bg-gray-800">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Combo</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Productos</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Precio</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Estado</th>
-                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-300">Acciones</th>
+                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Combo</th>
+                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Productos</th>
+                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Precio</th>
+                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Estado</th>
+                    <th className="px-6 py-5 text-right text-sm font-bold text-gray-300">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredCombos.map((combo) => (
                     <tr key={combo.id} className="border-t border-gray-800 hover:bg-gray-800/50 transition-colors">
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
                           <div className="relative w-12 h-12 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
                             {combo.image ? (
@@ -177,17 +177,17 @@ export default function CombosAdminPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <span className="text-gray-300">
                           {combo.products.length} producto{combo.products.length !== 1 ? 's' : ''}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <span className="text-white font-semibold">
                           ${parseFloat(combo.price.toString()).toLocaleString('es-AR')}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <div className="flex flex-col gap-1">
                           <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center justify-center ${
                             combo.isActive
@@ -203,7 +203,7 @@ export default function CombosAdminPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/admin/combos/${combo.id}`}
@@ -229,7 +229,7 @@ export default function CombosAdminPage() {
           </div>
 
           {/* Mobile Cards */}
-          <div className="lg:hidden space-y-3">
+          <div className="lg:hidden space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
             {filteredCombos.map((combo) => (
               <div
                 key={combo.id}

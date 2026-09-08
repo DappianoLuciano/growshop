@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, PackagePlus, FolderTree, ShoppingCart, Settings, X } from 'lucide-react'
+import { LayoutDashboard, Package, PackagePlus, FolderTree, ShoppingCart, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 const menuItems = [
@@ -11,7 +11,6 @@ const menuItems = [
   { href: '/admin/combos', icon: PackagePlus, label: 'Combos' },
   { href: '/admin/categorias', icon: FolderTree, label: 'Categorías' },
   { href: '/admin/ordenes', icon: ShoppingCart, label: 'Órdenes' },
-  { href: '/admin/configuracion', icon: Settings, label: 'Configuración' },
 ]
 
 export default function AdminSidebar() {

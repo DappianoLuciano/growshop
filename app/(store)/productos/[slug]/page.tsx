@@ -273,9 +273,10 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
               </h1>
 
               {product.description && (
-                <p className="text-sm text-gray-300 mb-4 leading-relaxed">
-                  {product.description}
-                </p>
+                <div
+                  className="text-sm text-gray-300 mb-4 leading-relaxed prose prose-invert prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
               )}
 
               {/* Características */}

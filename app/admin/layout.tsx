@@ -11,11 +11,11 @@ export default function AdminLayout({
   return (
     <SessionProvider>
       <ProtectedLayout>
-        <div className="bg-black min-h-screen">
+        <div className="bg-black min-h-screen overflow-x-hidden">
           <AdminHeader />
-          <div className="flex">
+          <div className="flex overflow-x-hidden">
             <AdminSidebar />
-            <main className="flex-1 ml-0 md:ml-64 pt-16 p-4 sm:p-6 lg:p-8">
+            <main className="flex-1 ml-0 md:ml-64 pt-16 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
               {children}
             </main>
           </div>

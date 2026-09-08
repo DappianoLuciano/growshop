@@ -5,6 +5,7 @@ import { ArrowLeft, Save, Upload, Loader2, Plus, X, Search } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import RichTextEditor from '@/components/RichTextEditor'
 
 interface ProductVariant {
   id: string
@@ -305,12 +306,9 @@ export default function EditarComboPage({ params }: { params: Promise<{ id: stri
                   <label htmlFor="description" className="block text-sm font-semibold text-gray-300 mb-2">
                     Descripción
                   </label>
-                  <textarea
-                    id="description"
+                  <RichTextEditor
                     value={formData.description || ''}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={4}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all resize-none"
+                    onChange={(html) => setFormData({ ...formData, description: html })}
                     placeholder="Descripción del combo..."
                   />
                 </div>

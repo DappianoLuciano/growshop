@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
+import { sendTelegramNotification } from '@/lib/telegram'
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,6 +66,30 @@ export async function POST(request: NextRequest) {
     })
 
     console.log('✅ Orden creada:', order.orderNumber)
+
+    // Enviar notificación de Telegram
+    try {
+      console.log('📤 Enviando notificación de Telegram...')
+      await sendTelegramNotification({
+        orderId: order.id,
+        customerName: order.customerName,
+        customerPhone: order.customerPhone,
+        customerEmail: order.customerEmail,
+        items: order.items.map(item => ({
+          name: item.productName,
+          quantity: item.quantity,
+          price: parseFloat(item.price.toString())
+        })),
+        total: parseFloat(order.total.toString()),
+        shippingType: order.shippingType,
+        shippingAddress: order.address || undefined,
+        createdAt: order.createdAt
+      })
+      console.log('✅ Notificación enviada correctamente')
+    } catch (telegramError) {
+      console.error('❌ Error al enviar notificación de Telegram:', telegramError)
+    }
+
     return NextResponse.json(order, { status: 201 })
   } catch (error: any) {
     console.error('Error al crear orden:', error)

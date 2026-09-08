@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react'
 import { ArrowLeft, Save, Upload, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import RichTextEditor from '@/components/RichTextEditor'
 
 interface Category {
   id: string
@@ -330,11 +331,10 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">Descripción</label>
-                  <textarea
+                  <RichTextEditor
                     value={formData.description || ''}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={4}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all resize-none"
+                    onChange={(html) => setFormData({ ...formData, description: html })}
+                    placeholder="Descripción detallada del producto..."
                   />
                 </div>
               </div>

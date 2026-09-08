@@ -82,7 +82,7 @@ export default function ProductosAdminPage() {
   }
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-6 md:p-8 overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
         <div>
@@ -140,22 +140,22 @@ export default function ProductosAdminPage() {
         <>
           {/* Desktop Table */}
           <div className="hidden lg:block bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="max-h-[calc(100vh-220px)] overflow-y-auto custom-scrollbar">
               <table className="w-full">
                 <thead className="bg-gray-800">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Producto</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Categoría</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Precio</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Stock</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Estado</th>
-                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-300">Acciones</th>
+                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Producto</th>
+                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Categoría</th>
+                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Precio</th>
+                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Stock</th>
+                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Estado</th>
+                    <th className="px-6 py-5 text-right text-sm font-bold text-gray-300">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredProducts.map((product) => (
                     <tr key={product.id} className="border-t border-gray-800 hover:bg-gray-800/50 transition-colors">
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
                           <div className="relative w-12 h-12 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
                             {product.images?.[0] ? (
@@ -179,12 +179,12 @@ export default function ProductosAdminPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <span className="text-gray-300">
                           {product.category?.name || 'Sin categoría'}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         {product.isOnSale && product.salePrice ? (
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
@@ -209,14 +209,14 @@ export default function ProductosAdminPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <span className={`text-sm font-semibold ${
                           getTotalStock(product) > 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
                           {getTotalStock(product)}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           product.isActive
                             ? 'bg-green-500/20 text-green-400'
@@ -225,7 +225,7 @@ export default function ProductosAdminPage() {
                           {product.isActive ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/admin/productos/${product.id}`}
@@ -251,7 +251,7 @@ export default function ProductosAdminPage() {
           </div>
 
           {/* Mobile Cards */}
-          <div className="lg:hidden space-y-3">
+          <div className="lg:hidden space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}

@@ -123,7 +123,7 @@ export default function OrdenesAdminPage() {
   }
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-6 md:p-8 overflow-x-hidden">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-black text-white mb-2">Órdenes</h1>
@@ -150,18 +150,18 @@ export default function OrdenesAdminPage() {
 
       {/* Desktop Table */}
       <div className="hidden lg:block bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div>
+        <div className="max-h-[calc(100vh-260px)] overflow-y-auto overflow-x-hidden custom-scrollbar">
           <table className="w-full table-fixed">
             <thead className="bg-gray-800">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[160px]">Orden</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[130px]">Cliente</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[180px]">Contacto</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[100px]">Total</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[130px]">Envío</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[100px]">Estado</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-300 w-[90px]">Fecha</th>
-                <th className="px-6 py-4 text-right text-sm font-bold text-gray-300 w-[100px]">Acciones</th>
+                <th className="px-6 py-5 text-left text-sm font-bold text-gray-300 w-[160px]">Orden</th>
+                <th className="px-6 py-5 text-left text-sm font-bold text-gray-300 w-[130px]">Cliente</th>
+                <th className="px-6 py-5 text-left text-sm font-bold text-gray-300 w-[180px]">Contacto</th>
+                <th className="px-6 py-5 text-left text-sm font-bold text-gray-300 w-[100px]">Total</th>
+                <th className="px-6 py-5 text-left text-sm font-bold text-gray-300 w-[130px]">Envío</th>
+                <th className="px-6 py-5 text-left text-sm font-bold text-gray-300 w-[100px]">Estado</th>
+                <th className="px-6 py-5 text-left text-sm font-bold text-gray-300 w-[90px]">Fecha</th>
+                <th className="px-6 py-5 text-right text-sm font-bold text-gray-300 w-[100px]">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -172,21 +172,21 @@ export default function OrdenesAdminPage() {
               ) : (
                 filteredOrders.map((order) => (
                   <tr key={order.id} className="border-t border-gray-800 hover:bg-gray-800/50 cursor-pointer transition-colors">
-                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
+                    <td className="px-6 py-5" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <p className="font-mono text-sm text-white">{order.orderNumber}</p>
                       <p className="text-xs text-gray-400">{order.items?.length || 0} items</p>
                     </td>
-                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
+                    <td className="px-6 py-5" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <p className="text-white font-semibold">{order.customerName}</p>
                     </td>
-                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
+                    <td className="px-6 py-5" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <p className="text-sm text-gray-300">{order.customerPhone}</p>
                       <p className="text-xs text-gray-400">{order.customerEmail}</p>
                     </td>
-                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
+                    <td className="px-6 py-5" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <span className="text-white font-bold">${parseFloat(order.total.toString()).toLocaleString('es-AR')}</span>
                     </td>
-                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
+                    <td className="px-6 py-5" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       {order.shippingType === 'SHIPPING' ? (
                         <div>
                           <p className="text-xs text-blue-400 font-semibold">🚚 Envío</p>
@@ -200,15 +200,15 @@ export default function OrdenesAdminPage() {
                         <p className="text-xs text-orange-400 font-semibold">🏪 Retiro</p>
                       )}
                     </td>
-                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
+                    <td className="px-6 py-5" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(order.paymentStatus)}`}>
                         {order.paymentStatus}
                       </span>
                     </td>
-                    <td className="px-6 py-4" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
+                    <td className="px-6 py-5" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <p className="text-sm text-gray-300">{new Date(order.createdAt).toLocaleDateString('es-AR')}</p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-5">
                       <div className="flex items-center justify-end gap-2">
                         {order.paymentStatus === 'PENDING' && (
                           <button onClick={(e) => { e.stopPropagation(); openApproveModal(order.id); }} className="p-2 text-gray-400 hover:text-green-500">
@@ -229,7 +229,7 @@ export default function OrdenesAdminPage() {
       </div>
 
       {/* Mobile Cards */}
-      <div className="lg:hidden space-y-4">
+      <div className="lg:hidden space-y-4 max-h-[calc(100vh-220px)] overflow-y-auto custom-scrollbar">
         {filteredOrders.length === 0 ? (
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center text-gray-400">
             No hay órdenes

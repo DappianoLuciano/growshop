@@ -186,9 +186,10 @@ export default function ComboDetailPage({ params }: { params: Promise<{ slug: st
               </h1>
 
               {combo.description && (
-                <p className="text-sm text-gray-300 mb-4 leading-relaxed">
-                  {combo.description}
-                </p>
+                <div
+                  className="text-sm text-gray-300 mb-4 leading-relaxed prose prose-invert prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: combo.description }}
+                />
               )}
 
               {/* Precio */}
