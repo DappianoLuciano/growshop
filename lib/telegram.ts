@@ -17,12 +17,15 @@ export async function sendTelegramNotification(orderData: {
   createdAt: Date
 }) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN
-  const chatId = process.env.TELEGRAM_CHAT_ID
+  const chatIds = process.env.TELEGRAM_CHAT_ID
 
-  if (!botToken || !chatId) {
+  if (!botToken || !chatIds) {
     console.warn('⚠️ Telegram no configurado - Variables de entorno faltantes')
     return
   }
+
+  // Separar múltiples chat IDs (separados por coma)
+  const chatIdList = chatIds.split(',').map(id => id.trim())
 
   try {
     // Formatear la fecha
@@ -62,29 +65,40 @@ ${envioTexto}
 
 🔗 Ver en admin: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/ordenes`
 
-    // Enviar el mensaje
-    const response = await fetch(
-      `https://api.telegram.org/bot${botToken}/sendMessage`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: mensaje,
-          parse_mode: 'Markdown',
-        }),
+    // Enviar el mensaje a cada chat ID
+    const sendPromises = chatIdList.map(async (chatId) => {
+      const response = await fetch(
+        `https://api.telegram.org/bot${botToken}/sendMessage`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: mensaje,
+            parse_mode: 'Markdown',
+          }),
+        }
+      )
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error(`❌ Error al enviar a ${chatId}:`, error)
+        return { chatId, success: false, error }
       }
-    )
 
-    if (!response.ok) {
-      const error = await response.json()
-      console.error('❌ Error al enviar notificación de Telegram:', error)
-      throw new Error(`Telegram API error: ${JSON.stringify(error)}`)
+      return { chatId, success: true }
+    })
+
+    const results = await Promise.all(sendPromises)
+    const successCount = results.filter(r => r.success).length
+
+    console.log(`✅ Notificación enviada a ${successCount}/${chatIdList.length} destinatarios`)
+
+    if (successCount === 0) {
+      throw new Error('No se pudo enviar a ningún destinatario')
     }
-
-    console.log('✅ Notificación de Telegram enviada correctamente')
   } catch (error) {
     console.error('❌ Error al enviar notificación de Telegram:', error)
     throw error
