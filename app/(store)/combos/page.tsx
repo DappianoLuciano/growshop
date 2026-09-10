@@ -32,6 +32,8 @@ interface Combo {
 export default function CombosPage() {
   const [combos, setCombos] = useState<Combo[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const combosPerPage = 8
   const { addItem } = useCart()
 
   useEffect(() => {
@@ -87,6 +89,17 @@ export default function CombosPage() {
     })
   }
 
+  // Paginación
+  const totalPages = Math.ceil(combos.length / combosPerPage)
+  const indexOfLastCombo = currentPage * combosPerPage
+  const indexOfFirstCombo = indexOfLastCombo - combosPerPage
+  const currentCombos = combos.slice(indexOfFirstCombo, indexOfLastCombo)
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black pb-20">
       {/* Hero Section */}
@@ -119,15 +132,16 @@ export default function CombosPage() {
             </p>
           </div>
         ) : (
-          /* Combos Grid */
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-            {combos.map((combo) => {
+          <>
+          {/* Combos Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-4">
+            {currentCombos.map((combo) => {
               const available = calculateAvailability(combo.products)
               return (
                 <Link
                   key={combo.id}
                   href={`/combos/${combo.slug}`}
-                  className="group relative bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden transition-all hover:scale-105 hover:border-green-500/50"
+                  className="group relative bg-gray-900 border border-gray-800 rounded-lg overflow-hidden transition-all hover:scale-105 hover:border-green-500/60"
                 >
                   {/* Badge COMBO */}
                   <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
@@ -156,25 +170,25 @@ export default function CombosPage() {
                   </div>
 
                   {/* Info */}
-                  <div className="p-2 sm:p-3">
-                    <h3 className="text-sm font-bold mb-1 line-clamp-2 transition-colors text-white group-hover:text-green-400">
+                  <div className="p-3 sm:p-4">
+                    <h3 className="text-base font-bold mb-1.5 line-clamp-2 transition-colors text-white group-hover:text-green-400">
                       {combo.name}
                     </h3>
 
-                    <p className="text-xs text-gray-500 mb-2">
+                    <p className="text-sm text-gray-500 mb-2">
                       {combo.products.length} producto{combo.products.length !== 1 ? 's' : ''}
                     </p>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-black text-green-400">
+                      <span className="text-2xl font-black text-green-400">
                         ${formatPrice(combo.price)}
                       </span>
                       <button
                         onClick={(e) => handleAddToCart(e, combo)}
                         disabled={available === 0}
-                        className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <ShoppingCart className="w-4 h-4" />
+                        <ShoppingCart className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
@@ -182,6 +196,70 @@ export default function CombosPage() {
               )
             })}
           </div>
+
+          {/* Controles de paginación */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Info de página */}
+              <p className="text-gray-400 text-sm">
+                Página <span className="text-white font-semibold">{currentPage}</span> de <span className="text-white font-semibold">{totalPages}</span>
+              </p>
+
+              {/* Botones de navegación */}
+              <div className="flex items-center gap-2">
+                {/* Botón Anterior */}
+                <button
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="w-12 h-12 md:w-10 md:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                {/* Números de página */}
+                <div className="flex gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => goToPage(page)}
+                          className={`w-12 h-12 md:w-10 md:h-10 rounded-lg transition-all ${
+                            currentPage === page
+                              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold'
+                              : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      )
+                    } else if (page === currentPage - 2 || page === currentPage + 2) {
+                      return <span key={page} className="text-gray-500 px-2">...</span>
+                    }
+                    return null
+                  })}
+                </div>
+
+                {/* Botón Siguiente */}
+                <button
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="w-12 h-12 md:w-10 md:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+          </>
         )}
       </div>
     </div>

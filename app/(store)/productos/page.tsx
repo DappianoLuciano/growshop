@@ -322,16 +322,16 @@ function ProductosContent() {
                 </div>
               ) : (
                 <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-4">
                   {currentProducts.map((product) => {
                     const discount = getDiscount(product)
                     return (
                       <Link
                         key={product.id}
                         href={`/productos/${product.slug}`}
-                        className={`group relative bg-gray-900/50 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
+                        className={`group relative bg-gray-900 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
                           product.isOnSale
-                            ? 'border-yellow-500/20 hover:border-yellow-500/50'
+                            ? 'border-yellow-500/30 hover:border-yellow-500/60'
                             : 'border-gray-800 hover:border-green-500/50'
                         }`}
                       >
@@ -357,51 +357,51 @@ function ProductosContent() {
                         </div>
 
                         {/* Info */}
-                        <div className="p-2 sm:p-3">
+                        <div className="p-3 sm:p-4">
                           {product.brand && (
-                            <p className="text-xs text-gray-400 mb-0.5">{product.brand}</p>
+                            <p className="text-sm text-gray-400 mb-1">{product.brand}</p>
                           )}
-                          <h3 className={`text-sm font-bold mb-1 line-clamp-2 transition-colors text-white ${
+                          <h3 className={`text-base font-bold mb-1.5 line-clamp-2 transition-colors text-white ${
                             product.isOnSale ? 'group-hover:text-yellow-400' : 'group-hover:text-green-400'
                           }`}>
                             {product.name}
                           </h3>
 
                           {product.category && (
-                            <p className="text-xs text-gray-500 mb-2">{product.category.name}</p>
+                            <p className="text-sm text-gray-500 mb-2">{product.category.name}</p>
                           )}
 
                           {product.isOnSale && product.salePrice ? (
                             <div className="space-y-1">
                               {/* Precio anterior tachado */}
-                              <div className="text-sm text-gray-400 line-through">
+                              <div className="text-base text-gray-400 line-through">
                                 ${formatPrice(product.price)}
                               </div>
                               {/* Precio de oferta en dorado */}
                               <div className="flex items-center justify-between">
-                                <span className="text-lg font-black text-yellow-400">
+                                <span className="text-2xl font-black text-yellow-400">
                                   ${formatPrice(getProductPrice(product))}
                                 </span>
                                 <button
                                   onClick={(e) => handleAddToCart(e, product)}
                                   disabled={getTotalStock(product) === 0}
-                                  className="p-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                  <ShoppingCart className="w-4 h-4" />
+                                  <ShoppingCart className="w-5 h-5" />
                                 </button>
                               </div>
                             </div>
                           ) : (
                             <div className="flex items-center justify-between">
-                              <span className="text-lg font-black text-green-400">
+                              <span className="text-2xl font-black text-green-400">
                                 ${formatPrice(getProductPrice(product))}
                               </span>
                               <button
                                 onClick={(e) => handleAddToCart(e, product)}
                                 disabled={getTotalStock(product) === 0}
-                                className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                <ShoppingCart className="w-4 h-4" />
+                                <ShoppingCart className="w-5 h-5" />
                               </button>
                             </div>
                           )}
@@ -425,7 +425,7 @@ function ProductosContent() {
                       <button
                         onClick={() => goToPage(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
+                        className="w-12 h-12 md:w-10 md:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -445,7 +445,7 @@ function ProductosContent() {
                               <button
                                 key={page}
                                 onClick={() => goToPage(page)}
-                                className={`w-10 h-10 rounded-lg transition-all ${
+                                className={`w-12 h-12 md:w-10 md:h-10 rounded-lg transition-all ${
                                   currentPage === page
                                     ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold'
                                     : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
@@ -465,7 +465,7 @@ function ProductosContent() {
                       <button
                         onClick={() => goToPage(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
+                        className="w-12 h-12 md:w-10 md:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

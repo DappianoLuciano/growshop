@@ -60,12 +60,12 @@ export default function HomePage() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-36 md:pt-44 pb-8 md:pb-16 flex items-center justify-center overflow-hidden z-10">
+      <section className="relative pt-32 md:pt-44 pb-6 md:pb-12 flex items-center justify-center overflow-hidden z-10">
 
         {/* Contenido */}
         <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-          <div className="mb-12 md:mb-16 inline-block">
-            <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-300 to-green-500">
+          <div className="mb-8 md:mb-16 inline-block">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-300 to-green-500 leading-tight">
               EL RINCON DEL CULTIVADOR
             </h1>
           </div>
@@ -73,7 +73,7 @@ export default function HomePage() {
           <div className="flex justify-center items-center animate-fadeIn-delayed-2">
             <Link
               href="/productos"
-              className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg rounded-xl overflow-hidden transition-all duration-300 hover:scale-110"
+              className="group relative px-8 py-4 md:px-10 md:py-5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg md:text-xl rounded-xl overflow-hidden transition-all duration-300 hover:scale-110 shadow-lg shadow-green-500/30"
             >
               <span className="relative z-10">Explorar Productos</span>
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -82,11 +82,46 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Productos Destacados */}
-      <section className="relative py-8 md:py-12 z-10">
+      {/* Features - Beneficios */}
+      <section className="py-8 md:py-12 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-6 md:mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-white">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+            <FeatureCardHero
+              icon={
+                <svg className="w-12 h-12 md:w-14 md:h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+              }
+              title="Envíos a Todo el País"
+              description="Entregas a cualquier parte de Argentina"
+            />
+            <FeatureCardHero
+              icon={
+                <svg className="w-12 h-12 md:w-14 md:h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              }
+              title="Pagá Como Quieras"
+              description="Mercado Pago, transferencia o efectivo"
+            />
+            <FeatureCardHero
+              icon={
+                <svg className="w-12 h-12 md:w-14 md:h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              }
+              title="Comprá con Seguridad"
+              description="Tus datos siempre protegidos"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Productos Destacados */}
+      <section className="relative py-6 md:py-12 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-4 md:mb-8">
+            <h2 className="text-xl md:text-3xl font-bold text-white">
               PRODUCTOS DESTACADOS
             </h2>
           </div>
@@ -95,9 +130,9 @@ export default function HomePage() {
       </section>
 
       {/* Categorías con Carrusel */}
-      <section className="relative py-8 md:py-20 z-10">
+      <section className="relative py-6 md:py-20 z-10">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-12 text-center">
+          <h2 className="text-xl md:text-3xl font-bold text-white mb-4 md:mb-12 text-center">
             CATEGORÍAS PRINCIPALES
           </h2>
           <CategoryCarousel />
@@ -105,9 +140,9 @@ export default function HomePage() {
       </section>
 
       {/* Ofertas */}
-      <section className="relative py-8 md:py-16 z-10">
+      <section className="relative py-6 md:py-16 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8 text-center">
+          <h2 className="text-xl md:text-3xl font-bold text-white mb-4 md:mb-8 text-center">
             OFERTAS
           </h2>
           <OfferProducts />
@@ -122,25 +157,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features simples */}
-      <section className="py-8 md:py-16 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-            <FeatureCard
-              title="Envíos a Todo el País"
-              description="Llega a cualquier parte de Argentina"
-            />
-            <FeatureCard
-              title="Pagos Seguros"
-              description="Mercado Pago, transferencia o efectivo"
-            />
-            <FeatureCard
-              title="Asesoramiento"
-              description="Te ayudamos a elegir lo mejor para tu cultivo"
-            />
-          </div>
-        </div>
-      </section>
     </div>
   )
 }
@@ -612,10 +628,10 @@ function FeaturedProductCard({
   return (
     <Link
       href={`/productos/${product.slug}`}
-      className={`group relative bg-gray-900/50 border rounded-lg overflow-hidden transition-all hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20 ${
+      className={`group relative bg-gray-900 border rounded-lg overflow-hidden transition-all hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20 ${
         product.isOnSale
-          ? 'border-yellow-500/20 hover:border-yellow-500/50'
-          : 'border-purple-500/20 hover:border-purple-500/50'
+          ? 'border-yellow-500/30 hover:border-yellow-500/60'
+          : 'border-purple-500/30 hover:border-purple-500/60'
       }`}
     >
       {/* Badge de destacado */}
@@ -645,43 +661,43 @@ function FeaturedProductCard({
       </div>
 
       {/* Info */}
-      <div className="p-2 sm:p-3">
+      <div className="p-3 sm:p-4">
         {product.brand && (
-          <p className="text-xs text-gray-400 mb-0.5">{product.brand}</p>
+          <p className="text-sm text-gray-400 mb-1">{product.brand}</p>
         )}
-        <h3 className={`text-sm font-bold mb-1 line-clamp-2 transition-colors text-white ${
+        <h3 className={`text-base font-bold mb-1.5 line-clamp-2 transition-colors text-white ${
           product.isOnSale ? 'group-hover:text-yellow-400' : 'group-hover:text-purple-400'
         }`}>
           {product.name}
         </h3>
 
         {product.category && (
-          <p className="text-xs text-gray-500 mb-2">{product.category.name}</p>
+          <p className="text-sm text-gray-500 mb-2">{product.category.name}</p>
         )}
 
         {product.isOnSale && product.salePrice ? (
           <div className="space-y-1">
             {/* Precio anterior tachado */}
-            <div className="text-sm text-gray-400 line-through">
+            <div className="text-base text-gray-400 line-through">
               ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
             </div>
             {/* Precio de oferta en dorado */}
             <div className="flex items-center justify-between">
-              <span className="text-lg font-black text-yellow-400">
+              <span className="text-2xl font-black text-yellow-400">
                 ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
               </span>
-              <button className="p-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
-                <ShoppingCart className="w-4 h-4" />
+              <button className="p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
+                <ShoppingCart className="w-5 h-5" />
               </button>
             </div>
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <span className="text-lg font-black text-purple-400">
+            <span className="text-2xl font-black text-purple-400">
               ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
             </span>
-            <button className="p-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all">
-              <ShoppingCart className="w-4 h-4" />
+            <button className="p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all">
+              <ShoppingCart className="w-5 h-5" />
             </button>
           </div>
         )}
@@ -764,9 +780,9 @@ function OfferProducts() {
               <Link
                 key={product.id}
                 href={`/productos/${product.slug}`}
-                className={`group relative bg-gray-900/50 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
+                className={`group relative bg-gray-900 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
                   product.isOnSale
-                    ? 'border-yellow-500/20 hover:border-yellow-500/50'
+                    ? 'border-yellow-500/30 hover:border-yellow-500/60'
                     : 'border-gray-800 hover:border-green-500/50'
                 }`}
               >
@@ -792,41 +808,41 @@ function OfferProducts() {
                 </div>
 
                 {/* Info */}
-                <div className="p-2 sm:p-3">
+                <div className="p-3 sm:p-4">
                   {product.brand && (
-                    <p className="text-xs text-gray-400 mb-0.5">{product.brand}</p>
+                    <p className="text-sm text-gray-400 mb-1">{product.brand}</p>
                   )}
-                  <h3 className={`text-sm font-bold mb-1 line-clamp-2 transition-colors text-white ${
+                  <h3 className={`text-base font-bold mb-1.5 line-clamp-2 transition-colors text-white ${
                     product.isOnSale ? 'group-hover:text-yellow-400' : 'group-hover:text-green-400'
                   }`}>
                     {product.name}
                   </h3>
 
                   {product.category && (
-                    <p className="text-xs text-gray-500 mb-2">{product.category.name}</p>
+                    <p className="text-sm text-gray-500 mb-2">{product.category.name}</p>
                   )}
 
                   {product.isOnSale && product.salePrice ? (
                     <div className="space-y-1">
-                      <div className="text-sm text-gray-400 line-through">
+                      <div className="text-base text-gray-400 line-through">
                         ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-black text-yellow-400">
+                        <span className="text-2xl font-black text-yellow-400">
                           ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
                         </span>
-                        <button className="p-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
-                          <ShoppingCart className="w-4 h-4" />
+                        <button className="p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
+                          <ShoppingCart className="w-5 h-5" />
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-black text-green-400">
+                      <span className="text-2xl font-black text-green-400">
                         ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
                       </span>
-                      <button className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
-                        <ShoppingCart className="w-4 h-4" />
+                      <button className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
+                        <ShoppingCart className="w-5 h-5" />
                       </button>
                     </div>
                   )}
@@ -885,9 +901,9 @@ function OfferProducts() {
             <Link
               key={product.id}
               href={`/productos/${product.slug}`}
-              className={`group relative bg-gray-900/50 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
+              className={`group relative bg-gray-900 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
                 product.isOnSale
-                  ? 'border-yellow-500/20 hover:border-yellow-500/50'
+                  ? 'border-yellow-500/30 hover:border-yellow-500/60'
                   : 'border-gray-800 hover:border-green-500/50'
               }`}
             >
@@ -913,43 +929,43 @@ function OfferProducts() {
               </div>
 
               {/* Info */}
-              <div className="p-2 sm:p-3">
+              <div className="p-3 sm:p-4">
                 {product.brand && (
-                  <p className="text-xs text-gray-400 mb-0.5">{product.brand}</p>
+                  <p className="text-sm text-gray-400 mb-1">{product.brand}</p>
                 )}
-                <h3 className={`text-sm font-bold mb-1 line-clamp-2 transition-colors text-white ${
+                <h3 className={`text-base font-bold mb-1.5 line-clamp-2 transition-colors text-white ${
                   product.isOnSale ? 'group-hover:text-yellow-400' : 'group-hover:text-green-400'
                 }`}>
                   {product.name}
                 </h3>
 
                 {product.category && (
-                  <p className="text-xs text-gray-500 mb-2">{product.category.name}</p>
+                  <p className="text-sm text-gray-500 mb-2">{product.category.name}</p>
                 )}
 
                 {product.isOnSale && product.salePrice ? (
                   <div className="space-y-1">
                     {/* Precio anterior tachado */}
-                    <div className="text-sm text-gray-400 line-through">
+                    <div className="text-base text-gray-400 line-through">
                       ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
                     </div>
                     {/* Precio de oferta en dorado */}
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-black text-yellow-400">
+                      <span className="text-2xl font-black text-yellow-400">
                         ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
                       </span>
-                      <button className="p-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
-                        <ShoppingCart className="w-4 h-4" />
+                      <button className="p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
+                        <ShoppingCart className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-black text-green-400">
+                    <span className="text-2xl font-black text-green-400">
                       ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
                     </span>
-                    <button className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
-                      <ShoppingCart className="w-4 h-4" />
+                    <button className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
+                      <ShoppingCart className="w-5 h-5" />
                     </button>
                   </div>
                 )}
@@ -962,11 +978,18 @@ function OfferProducts() {
   )
 }
 
-function FeatureCard({ title, description }: { title: string; description: string }) {
+function FeatureCardHero({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
-    <div className="bg-black rounded-lg md:rounded-xl p-4 md:p-8 text-center hover:shadow-2xl hover:shadow-green-500/50 transition-all duration-300 hover:-translate-y-2 border border-gray-800 hover:border-green-500/50 group">
-      <h3 className="text-base md:text-xl font-bold text-white mb-2 md:mb-3">{title}</h3>
-      <p className="text-sm md:text-base text-gray-400">{description}</p>
+    <div className="flex flex-col items-center text-center group">
+      <div className="text-green-400 mb-3 md:mb-4 transform group-hover:scale-110 transition-transform duration-300">
+        {icon}
+      </div>
+      <h3 className="text-lg md:text-xl font-black text-white mb-2 uppercase tracking-tight">
+        {title}
+      </h3>
+      <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+        {description}
+      </p>
     </div>
   )
 }

@@ -37,6 +37,8 @@ export default function OfertasPage() {
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<string>('default')
+  const [currentPage, setCurrentPage] = useState(1)
+  const productsPerPage = 8
 
   useEffect(() => {
     fetchCategories()
@@ -45,6 +47,7 @@ export default function OfertasPage() {
 
   useEffect(() => {
     fetchOffers()
+    setCurrentPage(1) // Reset a página 1 cuando cambia categoría
   }, [selectedCategory])
 
   const fetchCategories = async () => {
@@ -133,6 +136,17 @@ export default function OfertasPage() {
         return 0
     }
   })
+
+  // Paginación
+  const totalPages = Math.ceil(sortedProducts.length / productsPerPage)
+  const indexOfLastProduct = currentPage * productsPerPage
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+  const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct)
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <div className="relative bg-black min-h-screen">
@@ -306,14 +320,14 @@ export default function OfertasPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                    {sortedProducts.map((product) => {
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-4">
+                    {currentProducts.map((product) => {
                       const discount = getDiscount(product)
                       return (
                     <Link
                       key={product.id}
                       href={`/productos/${product.slug}`}
-                      className="group relative bg-gray-900/50 border border-yellow-500/20 rounded-lg overflow-hidden hover:border-yellow-500/50 transition-all hover:scale-105"
+                      className="group relative bg-gray-900 border border-yellow-500/30 rounded-lg overflow-hidden hover:border-yellow-500/60 transition-all hover:scale-105"
                     >
                       {/* Badge de descuento */}
                       {discount > 0 && (
@@ -337,37 +351,37 @@ export default function OfertasPage() {
                       </div>
 
                       {/* Info */}
-                      <div className="p-2 sm:p-3">
+                      <div className="p-3 sm:p-4">
                         {product.brand && (
-                          <p className="text-xs text-gray-400 mb-0.5">{product.brand}</p>
+                          <p className="text-sm text-gray-400 mb-1">{product.brand}</p>
                         )}
-                        <h3 className="text-sm font-bold mb-1 line-clamp-2 group-hover:text-yellow-400 transition-colors text-white">
+                        <h3 className="text-base font-bold mb-1.5 line-clamp-2 group-hover:text-yellow-400 transition-colors text-white">
                           {product.name}
                         </h3>
 
                         {product.category && (
-                          <p className="text-xs text-gray-500 mb-2">{product.category.name}</p>
+                          <p className="text-sm text-gray-500 mb-2">{product.category.name}</p>
                         )}
 
                         <div className="space-y-1">
                           {/* Precio anterior tachado */}
                           <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-400 line-through">
+                            <span className="text-base text-gray-400 line-through">
                               ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
                             </span>
                           </div>
 
                           {/* Precio de oferta */}
                           <div className="flex items-center justify-between">
-                            <span className="text-lg font-black text-yellow-400">
+                            <span className="text-2xl font-black text-yellow-400">
                               ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
                             </span>
                             <button
                               onClick={(e) => handleAddToCart(e, product)}
                               disabled={getTotalStock(product) === 0}
-                              className="p-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              <ShoppingCart className="w-4 h-4" />
+                              <ShoppingCart className="w-5 h-5" />
                             </button>
                           </div>
                         </div>
@@ -376,6 +390,69 @@ export default function OfertasPage() {
                       )
                     })}
                   </div>
+
+                  {/* Controles de paginación */}
+                  {totalPages > 1 && (
+                    <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                      {/* Info de página */}
+                      <p className="text-gray-400 text-sm">
+                        Página <span className="text-white font-semibold">{currentPage}</span> de <span className="text-white font-semibold">{totalPages}</span>
+                      </p>
+
+                      {/* Botones de navegación */}
+                      <div className="flex items-center gap-2">
+                        {/* Botón Anterior */}
+                        <button
+                          onClick={() => goToPage(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className="w-12 h-12 md:w-10 md:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+
+                        {/* Números de página */}
+                        <div className="flex gap-2">
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                            if (
+                              page === 1 ||
+                              page === totalPages ||
+                              (page >= currentPage - 1 && page <= currentPage + 1)
+                            ) {
+                              return (
+                                <button
+                                  key={page}
+                                  onClick={() => goToPage(page)}
+                                  className={`w-12 h-12 md:w-10 md:h-10 rounded-lg transition-all ${
+                                    currentPage === page
+                                      ? 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white font-semibold'
+                                      : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                                  }`}
+                                >
+                                  {page}
+                                </button>
+                              )
+                            } else if (page === currentPage - 2 || page === currentPage + 2) {
+                              return <span key={page} className="text-gray-500 px-2">...</span>
+                            }
+                            return null
+                          })}
+                        </div>
+
+                        {/* Botón Siguiente */}
+                        <button
+                          onClick={() => goToPage(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          className="w-12 h-12 md:w-10 md:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </main>
