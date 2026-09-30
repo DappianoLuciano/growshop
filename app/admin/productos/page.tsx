@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Search, Edit, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Loader2, DollarSign, Percent, X } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -30,6 +30,14 @@ export default function ProductosAdminPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Modal de precio
+  const [priceModalOpen, setPriceModalOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [priceMode, setPriceMode] = useState<'direct' | 'percent'>('direct')
+  const [newPrice, setNewPrice] = useState('')
+  const [percentIncrease, setPercentIncrease] = useState('')
+  const [updatingPrice, setUpdatingPrice] = useState(false)
 
   useEffect(() => {
     fetchProducts()
@@ -83,10 +91,84 @@ export default function ProductosAdminPage() {
     }
   }
 
+  const openPriceModal = (product: Product) => {
+    setSelectedProduct(product)
+    setNewPrice('')
+    setPercentIncrease('')
+    setPriceMode('direct')
+    setPriceModalOpen(true)
+  }
+
+  const closePriceModal = () => {
+    setPriceModalOpen(false)
+    setSelectedProduct(null)
+    setNewPrice('')
+    setPercentIncrease('')
+  }
+
+  const calculateNewPrice = (): number => {
+    if (!selectedProduct) return 0
+
+    if (priceMode === 'direct' && newPrice) {
+      return parseFloat(newPrice)
+    }
+
+    if (priceMode === 'percent' && percentIncrease) {
+      const currentPrice = parseFloat(selectedProduct.price.toString())
+      const increase = parseFloat(percentIncrease)
+      return currentPrice * (1 + increase / 100)
+    }
+
+    return parseFloat(selectedProduct.price.toString())
+  }
+
+  const handleUpdatePrice = async () => {
+    if (!selectedProduct) return
+
+    const calculatedPrice = calculateNewPrice()
+    if (calculatedPrice <= 0) {
+      alert('El precio debe ser mayor a 0')
+      return
+    }
+
+    setUpdatingPrice(true)
+
+    try {
+      const response = await fetch(`/api/admin/products/${selectedProduct.id}/price`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          price: calculatedPrice
+        })
+      })
+
+      if (response.ok) {
+        // Actualizar el producto en la lista
+        setProducts(products.map(p =>
+          p.id === selectedProduct.id
+            ? { ...p, price: calculatedPrice }
+            : p
+        ))
+        alert('Precio actualizado correctamente')
+        closePriceModal()
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Error al actualizar el precio')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Error al actualizar el precio')
+    } finally {
+      setUpdatingPrice(false)
+    }
+  }
+
   return (
-    <div className="p-6 md:p-8 overflow-x-hidden">
+    <div className="overflow-x-hidden w-full">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-black text-white mb-2">Productos</h1>
           <p className="text-gray-400">Administrá tu catálogo de productos</p>
@@ -142,22 +224,22 @@ export default function ProductosAdminPage() {
         <>
           {/* Desktop Table */}
           <div className="hidden lg:block bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-            <div className="max-h-[calc(100vh-220px)] overflow-y-auto custom-scrollbar">
-              <table className="w-full">
+            <div className="max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+              <table className="w-full table-fixed">
                 <thead className="bg-gray-800">
                   <tr>
-                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Producto</th>
-                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Categoría</th>
-                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Precio</th>
-                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Stock</th>
-                    <th className="px-6 py-5 text-left text-sm font-bold text-gray-300">Estado</th>
-                    <th className="px-6 py-5 text-right text-sm font-bold text-gray-300">Acciones</th>
+                    <th className="px-3 py-3 text-left text-sm font-bold text-gray-300 w-[35%]">Producto</th>
+                    <th className="px-3 py-3 text-left text-sm font-bold text-gray-300 w-[18%]">Categoría</th>
+                    <th className="px-3 py-3 text-left text-sm font-bold text-gray-300 w-[15%]">Precio</th>
+                    <th className="px-3 py-3 text-center text-sm font-bold text-gray-300 w-[8%]">Stock</th>
+                    <th className="px-3 py-3 text-center text-sm font-bold text-gray-300 w-[10%]">Estado</th>
+                    <th className="px-3 py-3 text-right text-sm font-bold text-gray-300 w-[14%]">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredProducts.map((product) => (
                     <tr key={product.id} className="border-t border-gray-800 hover:bg-gray-800/50 transition-colors">
-                      <td className="px-6 py-5">
+                      <td className="px-3 py-3">
                         <div className="flex items-center gap-3">
                           <div className="relative w-12 h-12 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
                             {product.images?.[0] ? (
@@ -181,12 +263,12 @@ export default function ProductosAdminPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-3 py-3">
                         <span className="text-gray-300">
                           {product.category?.name || 'Sin categoría'}
                         </span>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-3 py-3">
                         {product.isOnSale && product.salePrice ? (
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
@@ -211,14 +293,14 @@ export default function ProductosAdminPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-3 py-3 text-center">
                         <span className={`text-sm font-semibold ${
                           getTotalStock(product) > 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
                           {getTotalStock(product)}
                         </span>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-3 py-3 text-center">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           product.isActive
                             ? 'bg-green-500/20 text-green-400'
@@ -227,8 +309,15 @@ export default function ProductosAdminPage() {
                           {product.isActive ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-3 py-3">
                         <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openPriceModal(product)}
+                            className="p-2 text-gray-400 hover:text-yellow-400 transition-colors"
+                            title="Actualizar precio"
+                          >
+                            <DollarSign className="w-4 h-4" />
+                          </button>
                           <Link
                             href={`/admin/productos/${product.id}`}
                             className="p-2 text-gray-400 hover:text-green-400 transition-colors"
@@ -324,6 +413,13 @@ export default function ProductosAdminPage() {
                 </div>
 
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => openPriceModal(product)}
+                    className="px-3 py-2 bg-yellow-500/20 active:bg-yellow-500/30 text-yellow-400 rounded-lg transition-all"
+                    title="Actualizar precio"
+                  >
+                    <DollarSign className="w-3.5 h-3.5" />
+                  </button>
                   <Link
                     href={`/admin/productos/${product.id}`}
                     className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold rounded-lg active:scale-95 transition-all"
@@ -349,6 +445,179 @@ export default function ProductosAdminPage() {
       {!loading && products.length > 0 && (
         <div className="mt-4 text-sm text-gray-400">
           Mostrando {filteredProducts.length} de {products.length} productos
+        </div>
+      )}
+
+      {/* Modal de Actualización de Precio */}
+      {priceModalOpen && selectedProduct && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl max-w-sm w-full p-4">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-white">Actualizar Precio</h2>
+              <button
+                onClick={closePriceModal}
+                className="p-1.5 text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Producto Info */}
+            <div className="mb-3 p-3 bg-gray-800/50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                {selectedProduct.images?.[0] && (
+                  <div className="relative w-10 h-10 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+                    <Image
+                      src={selectedProduct.images[0].url}
+                      alt={selectedProduct.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-white font-semibold text-sm truncate">{selectedProduct.name}</p>
+                  {selectedProduct.brand && (
+                    <p className="text-gray-400 text-xs">{selectedProduct.brand}</p>
+                  )}
+                </div>
+              </div>
+              <div className="pt-2 border-t border-gray-700">
+                <p className="text-gray-400 text-xs mb-0.5">Precio actual</p>
+                <p className="text-xl font-bold text-white">
+                  ${parseFloat(selectedProduct.price.toString()).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
+
+            {/* Modo de actualización */}
+            <div className="mb-3">
+              <div className="flex gap-2 mb-3">
+                <button
+                  onClick={() => {
+                    setPriceMode('direct')
+                    setPercentIncrease('')
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    priceMode === 'direct'
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                      : 'bg-gray-800 text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <DollarSign className="w-4 h-4" />
+                  Precio Directo
+                </button>
+                <button
+                  onClick={() => {
+                    setPriceMode('percent')
+                    setNewPrice('')
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    priceMode === 'percent'
+                      ? 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white'
+                      : 'bg-gray-800 text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Percent className="w-4 h-4" />
+                  % Aumento
+                </button>
+              </div>
+
+              {priceMode === 'direct' ? (
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                    Nuevo precio
+                  </label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={newPrice}
+                      onChange={(e) => setNewPrice(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full pl-10 pr-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white font-semibold placeholder-gray-500 focus:outline-none focus:border-green-500 transition-all"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                    Porcentaje de aumento
+                  </label>
+                  <div className="relative">
+                    <Percent className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={percentIncrease}
+                      onChange={(e) => setPercentIncrease(e.target.value)}
+                      placeholder="0"
+                      className="w-full pl-10 pr-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white font-semibold placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition-all"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Ejemplo: 10 para aumentar 10%
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Preview del nuevo precio */}
+            {((priceMode === 'direct' && newPrice) || (priceMode === 'percent' && percentIncrease)) && (
+              <div className="mb-3 p-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-gray-400 text-xs">Precio actual</span>
+                  <span className="text-gray-400 text-sm line-through">
+                    ${parseFloat(selectedProduct.price.toString()).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white text-sm font-semibold">Precio nuevo</span>
+                  <span className="text-xl font-bold text-green-400">
+                    ${calculateNewPrice().toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                {priceMode === 'percent' && percentIncrease && (
+                  <div className="mt-2 pt-2 border-t border-green-500/30">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-400">Diferencia</span>
+                      <span className="text-green-400 font-semibold">
+                        +${(calculateNewPrice() - parseFloat(selectedProduct.price.toString())).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Acciones */}
+            <div className="flex gap-2">
+              <button
+                onClick={closePriceModal}
+                disabled={updatingPrice}
+                className="flex-1 px-3 py-2 bg-gray-800 text-gray-400 text-sm font-semibold rounded-lg hover:text-white transition-all disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleUpdatePrice}
+                disabled={updatingPrice || (!newPrice && !percentIncrease)}
+                className="flex-1 px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold rounded-lg hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100"
+              >
+                {updatingPrice ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Actualizando...
+                  </div>
+                ) : (
+                  'Actualizar Precio'
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

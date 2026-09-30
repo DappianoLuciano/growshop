@@ -15,6 +15,7 @@ interface ProductImageCarouselProps {
   compact?: boolean
   currentIndex?: number
   onIndexChange?: (index: number) => void
+  imageFit?: 'COVER' | 'CONTAIN'
 }
 
 export default function ProductImageCarousel({
@@ -22,9 +23,13 @@ export default function ProductImageCarousel({
   productName,
   compact = false,
   currentIndex: externalIndex,
-  onIndexChange
+  onIndexChange,
+  imageFit = 'COVER'
 }: ProductImageCarouselProps) {
   const [internalIndex, setInternalIndex] = useState(0)
+  const isContain = imageFit === 'CONTAIN'
+  const fitClassName = isContain ? 'object-contain p-2' : 'object-cover'
+  const bgClassName = isContain ? 'bg-white' : 'bg-gray-800'
 
   const currentIndex = externalIndex !== undefined ? externalIndex : internalIndex
 
@@ -49,12 +54,14 @@ export default function ProductImageCarousel({
 
   if (images.length === 1) {
     return (
-      <Image
-        src={images[0].url}
-        alt={images[0].alt || productName}
-        fill
-        className="object-cover"
-      />
+      <div className={`relative w-full h-full ${bgClassName}`}>
+        <Image
+          src={images[0].url}
+          alt={images[0].alt || productName}
+          fill
+          className={fitClassName}
+        />
+      </div>
     )
   }
 
@@ -77,13 +84,13 @@ export default function ProductImageCarousel({
   }
 
   return (
-    <div className="relative w-full h-full group">
+    <div className={`relative w-full h-full group ${bgClassName}`}>
       {/* Imagen actual */}
       <Image
         src={images[currentIndex].url}
         alt={images[currentIndex].alt || productName}
         fill
-        className="object-cover"
+        className={fitClassName}
       />
 
       {/* Controles de navegación */}

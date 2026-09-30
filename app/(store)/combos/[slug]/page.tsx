@@ -18,7 +18,7 @@ interface ComboProduct {
       brand: string | null
       slug: string
       images: { url: string; alt: string | null }[]
-      category: { name: string } | null
+      category: { name: string; imageFit?: 'COVER' | 'CONTAIN' } | null
     }
   }
 }
@@ -33,6 +33,19 @@ interface Combo {
   products: ComboProduct[]
 }
 
+interface SuggestedProduct {
+  id: string
+  name: string
+  brand: string | null
+  slug: string
+  price: number
+  isOnSale: boolean
+  salePrice: number | null
+  images: { url: string; alt: string | null }[]
+  variants: { stock: number }[]
+  category: { name: string; imageFit?: 'COVER' | 'CONTAIN' } | null
+}
+
 export default function ComboDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
   const router = useRouter()
@@ -41,9 +54,11 @@ export default function ComboDetailPage({ params }: { params: Promise<{ slug: st
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [addedToCart, setAddedToCart] = useState(false)
+  const [suggestedProducts, setSuggestedProducts] = useState<SuggestedProduct[]>([])
 
   useEffect(() => {
     fetchCombo()
+    fetchSuggestedProducts()
   }, [])
 
   const fetchCombo = async () => {
@@ -61,6 +76,35 @@ export default function ComboDetailPage({ params }: { params: Promise<{ slug: st
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchSuggestedProducts = async () => {
+    try {
+      const response = await fetch('/api/products')
+      if (response.ok) {
+        const data = await response.json()
+        const shuffled = [...data].sort(() => Math.random() - 0.5)
+        setSuggestedProducts(shuffled.slice(0, 4))
+      }
+    } catch (error) {
+      console.error('Error al cargar productos sugeridos:', error)
+    }
+  }
+
+  const getTotalStock = (product: SuggestedProduct) => {
+    return product.variants.reduce((total, v) => total + v.stock, 0)
+  }
+
+  const getProductPrice = (product: SuggestedProduct) => {
+    if (product.isOnSale && product.salePrice) {
+      return product.salePrice
+    }
+    return product.price
+  }
+
+  const getDiscount = (product: SuggestedProduct) => {
+    if (!product.isOnSale || !product.salePrice) return 0
+    return Math.round(((parseFloat(product.price.toString()) - parseFloat(product.salePrice.toString())) / parseFloat(product.price.toString())) * 100)
   }
 
   const calculateAvailability = (products: ComboProduct[]) => {
@@ -246,13 +290,13 @@ export default function ComboDetailPage({ params }: { params: Promise<{ slug: st
                       href={`/productos/${cp.variant.product.slug}`}
                       className="flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg hover:border-green-500/50 transition-colors group"
                     >
-                      <div className="relative w-12 h-12 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+                      <div className={`relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ${cp.variant.product.category?.imageFit === 'CONTAIN' ? 'bg-white' : 'bg-gray-800'}`}>
                         {cp.variant.product.images[0] ? (
                           <Image
                             src={cp.variant.product.images[0].url}
                             alt={cp.variant.product.name}
                             fill
-                            className="object-cover"
+                            className={cp.variant.product.category?.imageFit === 'CONTAIN' ? 'object-contain p-0.5' : 'object-cover'}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-600">
@@ -281,6 +325,92 @@ export default function ComboDetailPage({ params }: { params: Promise<{ slug: st
               </div>
             </div>
           </div>
+
+          {/* Productos Sugeridos */}
+          {suggestedProducts.length > 0 && (
+            <div className="mt-12 md:mt-16">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">
+                PRODUCTOS SUGERIDOS
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                {suggestedProducts.map((suggestedProduct) => {
+                  const discount = getDiscount(suggestedProduct)
+                  const displayPrice = getProductPrice(suggestedProduct)
+
+                  return (
+                    <Link
+                      key={suggestedProduct.id}
+                      href={`/productos/${suggestedProduct.slug}`}
+                      className={`group relative bg-gray-900/50 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
+                        suggestedProduct.isOnSale
+                          ? 'border-yellow-500/20 hover:border-yellow-500/50'
+                          : 'border-gray-800 hover:border-green-500/50'
+                      }`}
+                    >
+                      {/* Badge de descuento */}
+                      {discount > 0 && (
+                        <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
+                          -{discount}%
+                        </div>
+                      )}
+
+                      {/* Imagen */}
+                      <div className={`relative aspect-square ${suggestedProduct.category?.imageFit === 'CONTAIN' ? 'bg-white' : 'bg-gray-800'}`}>
+                        {suggestedProduct.images[0] ? (
+                          <Image
+                            src={suggestedProduct.images[0].url}
+                            alt={suggestedProduct.images[0].alt || suggestedProduct.name}
+                            fill
+                            className={suggestedProduct.category?.imageFit === 'CONTAIN' ? 'object-contain p-2' : 'object-cover'}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
+                            Sin imagen
+                          </div>
+                        )}
+                        {getTotalStock(suggestedProduct) === 0 && (
+                          <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                            <span className="text-white font-bold text-sm">Sin Stock</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="p-2 sm:p-3">
+                        {suggestedProduct.brand && (
+                          <p className="text-xs text-gray-400 mb-0.5">{suggestedProduct.brand}</p>
+                        )}
+                        <h3 className={`text-sm font-bold mb-1 line-clamp-2 transition-colors text-white ${
+                          suggestedProduct.isOnSale ? 'group-hover:text-yellow-400' : 'group-hover:text-green-400'
+                        }`}>
+                          {suggestedProduct.name}
+                        </h3>
+
+                        {suggestedProduct.category && (
+                          <p className="text-xs text-gray-500 mb-2">{suggestedProduct.category.name}</p>
+                        )}
+
+                        {suggestedProduct.isOnSale && suggestedProduct.salePrice ? (
+                          <div className="space-y-1">
+                            <div className="text-sm text-gray-400 line-through">
+                              ${formatPrice(suggestedProduct.price)}
+                            </div>
+                            <div className="text-lg font-black text-yellow-400">
+                              ${formatPrice(displayPrice)}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-lg font-black text-green-400">
+                            ${formatPrice(displayPrice)}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

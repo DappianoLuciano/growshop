@@ -53,7 +53,7 @@ function PedidoContent() {
 
             <div className="space-y-3">
               <a
-                href="https://wa.me/5491136295630"
+                href="https://wa.me/5491135781844"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl hover:scale-105 transition-all"

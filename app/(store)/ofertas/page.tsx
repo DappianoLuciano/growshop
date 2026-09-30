@@ -27,6 +27,7 @@ interface Product {
     id: string
     name: string
     slug: string
+    imageFit?: 'COVER' | 'CONTAIN'
   } | null
 }
 
@@ -326,7 +327,7 @@ export default function OfertasPage() {
                       return (
                     <Link
                       key={product.id}
-                      href={`/productos/${product.slug}`}
+                      href={`/productos/${product.slug}?from=ofertas`}
                       className="group relative bg-gray-900 border border-yellow-500/30 rounded-lg overflow-hidden hover:border-yellow-500/60 transition-all hover:scale-105"
                     >
                       {/* Badge de descuento */}
@@ -342,6 +343,7 @@ export default function OfertasPage() {
                           images={product.images}
                           productName={product.name}
                           compact={true}
+                          imageFit={product.category?.imageFit}
                         />
                         {getTotalStock(product) === 0 && (
                           <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
@@ -366,20 +368,20 @@ export default function OfertasPage() {
                         <div className="space-y-1">
                           {/* Precio anterior tachado */}
                           <div className="flex items-center gap-2">
-                            <span className="text-base text-gray-400 line-through">
-                              ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                            <span className="text-sm sm:text-base text-gray-400 line-through">
+                              ${parseFloat(product.price.toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                             </span>
                           </div>
 
                           {/* Precio de oferta */}
-                          <div className="flex items-center justify-between">
-                            <span className="text-2xl font-black text-yellow-400">
-                              ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                            <span className="text-lg sm:text-2xl font-black whitespace-nowrap text-yellow-400">
+                              ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                             </span>
                             <button
                               onClick={(e) => handleAddToCart(e, product)}
                               disabled={getTotalStock(product) === 0}
-                              className="p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="p-1.5 sm:p-2 shrink-0 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <ShoppingCart className="w-5 h-5" />
                             </button>

@@ -99,20 +99,21 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          // El servidor calcula precios, stock y costo de envío
           items: items.map(item => ({
             variantId: item.variantId,
             comboId: item.comboId,
-            productName: item.productName,
             quantity: item.quantity,
-            price: item.price,
           })),
-          subtotal: totalPrice,
-          shippingCost: selectedShipping && formData.shippingType === 'SHIPPING' ? selectedShipping.precio : 0, // Precio con markup que paga el cliente
-          total: finalTotal,
+          shippingService: formData.shippingType === 'SHIPPING' ? selectedShipping?.servicio : undefined,
         }),
       })
 
-      if (!response.ok) throw new Error('Error')
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        alert(data?.error || 'Error al procesar tu pedido')
+        return
+      }
 
       const order = await response.json()
       const message = generateWhatsAppMessage(order)
@@ -121,7 +122,7 @@ export default function CheckoutPage() {
       setCheckoutComplete(true)
 
       // Abrir WhatsApp inmediatamente
-      window.open(`https://wa.me/5491136295630?text=${encodeURIComponent(message)}`, '_blank')
+      window.open(`https://wa.me/5491135781844?text=${encodeURIComponent(message)}`, '_blank')
 
       // Limpiar carrito
       clearCart()
@@ -138,21 +139,21 @@ export default function CheckoutPage() {
   const generateWhatsAppMessage = (order: any) => {
     let msg = `🛒 NUEVO PEDIDO - ${order.orderNumber}\n\n`
     msg += `👤 Cliente: ${formData.customerName}\n📧 ${formData.customerEmail}\n📱 ${formData.customerPhone}\n\n📦 Productos:\n`
-    items.forEach((item, i) => {
-      msg += `${i + 1}. ${item.productName} x${item.quantity} - $${(item.price * item.quantity).toLocaleString('es-AR')}\n`
+    order.items.forEach((item: any, i: number) => {
+      msg += `${i + 1}. ${item.productName} x${item.quantity} - $${item.subtotal.toLocaleString('es-AR')}\n`
     })
-    msg += `\n💰 Subtotal: $${totalPrice.toLocaleString('es-AR')}\n`
+    msg += `\n💰 Subtotal: $${order.subtotal.toLocaleString('es-AR')}\n`
     if (formData.shippingType === 'SHIPPING') {
       msg += `📍 Envío a: ${formData.address}, ${formData.city}, ${formData.province} (CP: ${formData.postalCode})\n`
       if (selectedShipping) {
-        msg += `🚚 Tipo: ${selectedShipping.servicio} - $${selectedShipping.precio.toLocaleString('es-AR')}\n`
+        msg += `🚚 Tipo: ${selectedShipping.servicio} - $${order.shippingCost.toLocaleString('es-AR')}\n`
       }
     } else if (formData.shippingType === 'PICKUP') {
       msg += `🤝 Punto de encuentro\n`
     } else if (formData.shippingType === 'ARRANGEMENT') {
       msg += `⚡ Envío express (Zona Sur y CABA)\n`
     }
-    msg += `\n💵 TOTAL: $${finalTotal.toLocaleString('es-AR')}\n`
+    msg += `\n💵 TOTAL: $${order.total.toLocaleString('es-AR')}\n`
     if (formData.notes) msg += `\n📝 Notas: ${formData.notes}`
     return msg
   }

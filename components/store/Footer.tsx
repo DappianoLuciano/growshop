@@ -46,7 +46,7 @@ export default function Footer() {
               Facebook
             </a>
             <a
-              href="https://wa.me/5491136295630"
+              href="https://wa.me/5491135781844"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="WhatsApp"
@@ -105,7 +105,7 @@ export default function Footer() {
                   Facebook
                 </a>
                 <a
-                  href="https://wa.me/5491136295630"
+                  href="https://wa.me/5491135781844"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="WhatsApp"
@@ -132,8 +132,8 @@ export default function Footer() {
               <ul className="space-y-2">
                 <li>
                   <p className="text-xs text-gray-400">WhatsApp</p>
-                  <a href="https://wa.me/5491136295630" target="_blank" rel="noopener noreferrer" className="text-white hover:text-green-400 transition-colors text-xs">
-                    +54 9 11 3629-5630
+                  <a href="https://wa.me/5491135781844" target="_blank" rel="noopener noreferrer" className="text-white hover:text-green-400 transition-colors text-xs">
+                    +54 9 11 3578-1844
                   </a>
                 </li>
                 <li>

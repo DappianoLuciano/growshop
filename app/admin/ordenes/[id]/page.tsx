@@ -80,7 +80,7 @@ export default function OrdenDetailPage({ params }: { params: Promise<{ id: stri
             localidad: 'Berazategui',
             provincia: 'Buenos Aires',
             codigoPostal: process.env.NEXT_PUBLIC_STORE_POSTAL_CODE || '1884',
-            telefono: process.env.NEXT_PUBLIC_STORE_PHONE || '1136295630'
+            telefono: process.env.NEXT_PUBLIC_STORE_PHONE || '1135781844'
           }
         }),
       })

@@ -10,6 +10,13 @@ interface Category {
   id: string
   name: string
   slug: string
+  section: 'GROW' | 'FERRETERIA' | 'ACCESORIOS'
+}
+
+const sectionLabels: Record<Category['section'], string> = {
+  GROW: 'Productos Grow',
+  FERRETERIA: 'Ferretería',
+  ACCESORIOS: 'Accesorios',
 }
 
 const getCategoryFields = (slug: string): string[] => {
@@ -46,11 +53,14 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
 
   const [images, setImages] = useState<string[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [section, setSection] = useState<Category['section']>('GROW')
+  const [sectionInitialized, setSectionInitialized] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
 
+  const filteredCategories = categories.filter(c => c.section === section)
   const selectedCategory = categories.find(c => c.id === formData.categoryId)
   const categoryFields = selectedCategory ? getCategoryFields(selectedCategory.slug) : []
 
@@ -58,6 +68,17 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
     fetchProduct()
     fetchCategories()
   }, [])
+
+  // Una vez que tenemos categorías y el producto, inicializamos la sección según su categoría actual
+  useEffect(() => {
+    if (!sectionInitialized && categories.length > 0 && formData.categoryId) {
+      const current = categories.find(c => c.id === formData.categoryId)
+      if (current) {
+        setSection(current.section)
+        setSectionInitialized(true)
+      }
+    }
+  }, [categories, formData.categoryId, sectionInitialized])
 
   const fetchCategories = async () => {
     try {
@@ -387,7 +408,23 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
 
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <h2 className="text-lg font-bold text-white mb-4">Categoría</h2>
+              <h2 className="text-lg font-bold text-white mb-4">Sección y Categoría</h2>
+
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Sección *</label>
+              <select
+                value={section}
+                onChange={(e) => {
+                  setSection(e.target.value as Category['section'])
+                  setFormData({ ...formData, categoryId: '' })
+                }}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-green-500 transition-all mb-4"
+              >
+                <option value="GROW">Productos Grow</option>
+                <option value="FERRETERIA">Ferretería</option>
+                <option value="ACCESORIOS">Accesorios</option>
+              </select>
+
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Categoría *</label>
               <select
                 value={formData.categoryId}
                 onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
@@ -395,10 +432,15 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
                 required
               >
                 <option value="">Seleccionar categoría *</option>
-                {categories.map(cat => (
+                {filteredCategories.map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
+              {filteredCategories.length === 0 && (
+                <p className="text-xs text-yellow-500 mt-2">
+                  No hay categorías creadas en {sectionLabels[section]} todavía.
+                </p>
+              )}
             </div>
 
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">

@@ -1,7 +1,7 @@
 'use client'
 
 export default function WhatsAppButton() {
-  const whatsappNumber = '5491136295630'
+  const whatsappNumber = '5491135781844'
   const message = 'Hola! Estoy interesado en sus productos'
 
   const handleClick = () => {

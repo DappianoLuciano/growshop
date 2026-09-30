@@ -10,6 +10,13 @@ interface Category {
   id: string
   name: string
   slug: string
+  section: 'GROW' | 'FERRETERIA' | 'ACCESORIOS'
+}
+
+const sectionLabels: Record<Category['section'], string> = {
+  GROW: 'Productos Grow',
+  FERRETERIA: 'Ferretería',
+  ACCESORIOS: 'Accesorios',
 }
 
 const categoryFields: Record<string, string[]> = {
@@ -33,6 +40,7 @@ export default function NuevoProductoPage() {
     stock: '' as string | number,
     marca: '',
     sku: '',
+    section: 'GROW' as Category['section'],
     categoryId: '',
     isActive: true,
     isFeatured: false,
@@ -63,6 +71,7 @@ export default function NuevoProductoPage() {
     }
   }
 
+  const filteredCategories = categories.filter(c => c.section === formData.section)
   const selectedCategory = categories.find(c => c.id === formData.categoryId)
   const selectedCategoryFields = selectedCategory ? categoryFields[selectedCategory.slug] || [] : []
 
@@ -400,20 +409,44 @@ export default function NuevoProductoPage() {
 
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Categoría */}
+            {/* Sección y Categoría */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <h2 className="text-lg font-bold text-white mb-4">Categoría</h2>
+              <h2 className="text-lg font-bold text-white mb-4">Sección y Categoría</h2>
+
+              <label htmlFor="section" className="block text-sm font-semibold text-gray-300 mb-2">
+                Sección *
+              </label>
               <select
+                id="section"
+                value={formData.section}
+                onChange={(e) => setFormData({ ...formData, section: e.target.value as Category['section'], categoryId: '' })}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-green-500 transition-all mb-4"
+              >
+                <option value="GROW">Productos Grow</option>
+                <option value="FERRETERIA">Ferretería</option>
+                <option value="ACCESORIOS">Accesorios</option>
+              </select>
+
+              <label htmlFor="categoryId" className="block text-sm font-semibold text-gray-300 mb-2">
+                Categoría *
+              </label>
+              <select
+                id="categoryId"
                 value={formData.categoryId}
                 onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                 className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-green-500 transition-all"
                 required
               >
                 <option value="">Seleccionar categoría *</option>
-                {categories.map(cat => (
+                {filteredCategories.map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
+              {filteredCategories.length === 0 && (
+                <p className="text-xs text-yellow-500 mt-2">
+                  No hay categorías creadas en {sectionLabels[formData.section]} todavía. Creá una en Categorías.
+                </p>
+              )}
               <p className="text-xs text-gray-500 mt-2">
                 Las características específicas aparecerán según la categoría
               </p>

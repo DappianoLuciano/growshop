@@ -62,8 +62,8 @@ export default function ContactoPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-white mb-1">WhatsApp</h3>
-                    <a href="tel:+5491112345678" className="text-gray-400 hover:text-green-400 transition-colors">
-                      +54 9 11 1234-5678
+                    <a href="https://wa.me/5491135781844" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 transition-colors">
+                      +54 9 11 3578-1844
                     </a>
                   </div>
                 </div>

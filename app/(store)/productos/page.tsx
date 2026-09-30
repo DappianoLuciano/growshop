@@ -30,6 +30,7 @@ interface Product {
     name: string
     slug: string
     description: string | null
+    imageFit?: 'COVER' | 'CONTAIN'
   } | null
 }
 
@@ -65,7 +66,7 @@ function ProductosContent() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/admin/categories')
+      const response = await fetch('/api/admin/categories?section=GROW')
       if (response.ok) {
         const data = await response.json()
         setCategories(data)
@@ -79,12 +80,11 @@ function ProductosContent() {
     setLoading(true)
     try {
       const params = new URLSearchParams()
+      params.append('section', 'GROW')
       if (selectedCategory) params.append('categoria', selectedCategory)
       if (searchQuery) params.append('busqueda', searchQuery)
 
-      const url = params.toString()
-        ? `/api/products?${params.toString()}`
-        : '/api/products'
+      const url = `/api/products?${params.toString()}`
 
       const response = await fetch(url)
       if (response.ok) {
@@ -328,7 +328,7 @@ function ProductosContent() {
                     return (
                       <Link
                         key={product.id}
-                        href={`/productos/${product.slug}`}
+                        href={`/productos/${product.slug}?from=productos`}
                         className={`group relative bg-gray-900 border rounded-lg overflow-hidden transition-all hover:scale-105 ${
                           product.isOnSale
                             ? 'border-yellow-500/30 hover:border-yellow-500/60'
@@ -348,6 +348,7 @@ function ProductosContent() {
                             images={product.images}
                             productName={product.name}
                             compact={true}
+                            imageFit={product.category?.imageFit}
                           />
                           {getTotalStock(product) === 0 && (
                             <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
@@ -374,32 +375,32 @@ function ProductosContent() {
                           {product.isOnSale && product.salePrice ? (
                             <div className="space-y-1">
                               {/* Precio anterior tachado */}
-                              <div className="text-base text-gray-400 line-through">
+                              <div className="text-sm sm:text-base text-gray-400 line-through">
                                 ${formatPrice(product.price)}
                               </div>
                               {/* Precio de oferta en dorado */}
-                              <div className="flex items-center justify-between">
-                                <span className="text-2xl font-black text-yellow-400">
+                              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                                <span className="text-lg sm:text-2xl font-black whitespace-nowrap text-yellow-400">
                                   ${formatPrice(getProductPrice(product))}
                                 </span>
                                 <button
                                   onClick={(e) => handleAddToCart(e, product)}
                                   disabled={getTotalStock(product) === 0}
-                                  className="p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="p-1.5 sm:p-2 shrink-0 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   <ShoppingCart className="w-5 h-5" />
                                 </button>
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-center justify-between">
-                              <span className="text-2xl font-black text-green-400">
+                            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                              <span className="text-lg sm:text-2xl font-black whitespace-nowrap text-green-400">
                                 ${formatPrice(getProductPrice(product))}
                               </span>
                               <button
                                 onClick={(e) => handleAddToCart(e, product)}
                                 disabled={getTotalStock(product) === 0}
-                                className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="p-1.5 sm:p-2 shrink-0 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <ShoppingCart className="w-5 h-5" />
                               </button>

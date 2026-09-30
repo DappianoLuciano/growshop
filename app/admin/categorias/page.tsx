@@ -20,10 +20,23 @@ interface Category {
   id: string
   name: string
   slug: string
+  section: 'GROW' | 'FERRETERIA' | 'ACCESORIOS'
   _count?: {
     products: number
   }
   products?: Product[]
+}
+
+const sectionLabels: Record<Category['section'], string> = {
+  GROW: 'Productos Grow',
+  FERRETERIA: 'Ferretería',
+  ACCESORIOS: 'Accesorios',
+}
+
+const sectionStyles: Record<Category['section'], string> = {
+  GROW: 'bg-green-500/20 text-green-400',
+  FERRETERIA: 'bg-orange-500/20 text-orange-400',
+  ACCESORIOS: 'bg-blue-500/20 text-blue-400',
 }
 
 export default function CategoriasAdminPage() {
@@ -31,6 +44,11 @@ export default function CategoriasAdminPage() {
   const [loading, setLoading] = useState(true)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
   const [loadingProducts, setLoadingProducts] = useState<string | null>(null)
+  const [sectionFilter, setSectionFilter] = useState<'ALL' | Category['section']>('ALL')
+
+  const filteredCategories = sectionFilter === 'ALL'
+    ? categories
+    : categories.filter((c) => c.section === sectionFilter)
 
   useEffect(() => {
     fetchCategories()
@@ -134,9 +152,26 @@ export default function CategoriasAdminPage() {
         </Link>
       </div>
 
+      {/* Filtro por sección */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {(['ALL', 'GROW', 'FERRETERIA', 'ACCESORIOS'] as const).map((s) => (
+          <button
+            key={s}
+            onClick={() => setSectionFilter(s)}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              sectionFilter === s
+                ? 'bg-green-500 text-white'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+            }`}
+          >
+            {s === 'ALL' ? 'Todas' : sectionLabels[s]}
+          </button>
+        ))}
+      </div>
+
       {/* Categories Grid */}
       <div className="grid grid-cols-1 gap-6">
-        {categories.map((categoria) => {
+        {filteredCategories.map((categoria) => {
           const isExpanded = expandedCategory === categoria.id
           const isLoading = loadingProducts === categoria.id
           const hasProducts = (categoria._count?.products || 0) > 0
@@ -153,6 +188,9 @@ export default function CategoriasAdminPage() {
                       <h3 className="text-xl font-bold text-white">{categoria.name}</h3>
                       <div className="text-xs text-gray-500 bg-gray-800 px-3 py-1 rounded-lg">
                         /{categoria.slug}
+                      </div>
+                      <div className={`text-xs font-semibold px-3 py-1 rounded-lg ${sectionStyles[categoria.section]}`}>
+                        {sectionLabels[categoria.section]}
                       </div>
                     </div>
                     <button

@@ -9,6 +9,7 @@ import { usePathname, useRouter } from 'next/navigation'
 
 interface SearchResult {
   id: string
+  type: 'product' | 'combo'
   name: string
   brand: string | null
   slug: string
@@ -88,8 +89,8 @@ export default function Header() {
     }
   }
 
-  const handleResultClick = (slug: string) => {
-    router.push(`/productos/${slug}`)
+  const handleResultClick = (result: SearchResult) => {
+    router.push(result.type === 'combo' ? `/combos/${result.slug}` : `/productos/${result.slug}`)
     setSearchTerm('')
     setShowResults(false)
   }
@@ -175,9 +176,9 @@ export default function Header() {
 
                         return (
                           <button
-                            key={result.id}
+                            key={`${result.type}-${result.id}`}
                             type="button"
-                            onClick={() => handleResultClick(result.slug)}
+                            onClick={() => handleResultClick(result)}
                             className="w-full px-4 py-3 hover:bg-gray-800 transition-colors flex items-center gap-3 border-b border-gray-800 last:border-0"
                           >
                             {result.image && (
@@ -195,7 +196,9 @@ export default function Header() {
                               </div>
                             )}
                             <div className="flex-1 text-left">
-                              {result.brand && (
+                              {result.type === 'combo' ? (
+                                <p className="text-xs text-green-400 font-semibold">COMBO</p>
+                              ) : result.brand && (
                                 <p className="text-xs text-gray-500">{result.brand}</p>
                               )}
                               <p className="text-sm text-white font-medium line-clamp-1">{result.name}</p>
@@ -228,13 +231,16 @@ export default function Header() {
               {/* Navigation */}
               <nav className="flex items-center gap-1">
                 <NavLink href="/productos">
-                  PRODUCTOS
+                  PRODUCTOS GROW
                 </NavLink>
                 <NavLink href="/combos">
                   COMBOS
                 </NavLink>
-                <NavLink href="/ofertas" special>
-                  OFERTAS
+                <NavLink href="/ferreteria">
+                  FERRETERIA
+                </NavLink>
+                <NavLink href="/accesorios">
+                  ACCESORIOS
                 </NavLink>
               </nav>
 
@@ -332,7 +338,7 @@ export default function Header() {
                 : 'text-gray-300 hover:bg-gray-800 border-2 border-transparent'
             }`}
           >
-            PRODUCTOS
+            PRODUCTOS GROW
           </Link>
           <Link
             href="/combos"
@@ -346,18 +352,26 @@ export default function Header() {
             COMBOS
           </Link>
           <Link
-            href="/ofertas"
+            href="/ferreteria"
             onClick={closeMenu}
             className={`block px-6 py-3 text-base font-semibold rounded-xl transition-all ${
-              isActive('/ofertas')
-                ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400 border-2 border-yellow-500'
+              isActive('/ferreteria')
+                ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-white border-2 border-green-500'
                 : 'text-gray-300 hover:bg-gray-800 border-2 border-transparent'
             }`}
           >
-            <div className="flex items-center gap-2">
-              OFERTAS
-              <Sparkles className="w-4 h-4 text-yellow-400" />
-            </div>
+            FERRETERIA
+          </Link>
+          <Link
+            href="/accesorios"
+            onClick={closeMenu}
+            className={`block px-6 py-3 text-base font-semibold rounded-xl transition-all ${
+              isActive('/accesorios')
+                ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-white border-2 border-green-500'
+                : 'text-gray-300 hover:bg-gray-800 border-2 border-transparent'
+            }`}
+          >
+            ACCESORIOS
           </Link>
           <Link
             href="/carrito"

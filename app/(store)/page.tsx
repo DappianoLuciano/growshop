@@ -60,7 +60,7 @@ export default function HomePage() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-32 md:pt-44 pb-6 md:pb-12 flex items-center justify-center overflow-hidden z-10">
+      <section className="relative pt-32 md:pt-44 pb-12 md:pb-24 flex items-center justify-center overflow-hidden z-10">
 
         {/* Contenido */}
         <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
@@ -70,7 +70,15 @@ export default function HomePage() {
             </h1>
           </div>
 
-          <div className="flex justify-center items-center animate-fadeIn-delayed-2">
+          <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-12 animate-fadeIn-delayed-2">
+            <Link
+              href="/ofertas"
+              className="group relative px-8 py-4 md:px-10 md:py-5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold text-lg md:text-xl rounded-xl overflow-hidden transition-all duration-300 hover:scale-110 shadow-lg shadow-yellow-500/30"
+            >
+              <span className="relative z-10">Ver Ofertas</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </Link>
+
             <Link
               href="/productos"
               className="group relative px-8 py-4 md:px-10 md:py-5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg md:text-xl rounded-xl overflow-hidden transition-all duration-300 hover:scale-110 shadow-lg shadow-green-500/30"
@@ -86,33 +94,49 @@ export default function HomePage() {
       <section className="py-8 md:py-12 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            <FeatureCardHero
-              icon={
+            <div className="flex flex-col items-center text-center group">
+              <div className="text-green-400 mb-3 md:mb-4 transform group-hover:scale-110 transition-transform duration-300">
                 <svg className="w-12 h-12 md:w-14 md:h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                 </svg>
-              }
-              title="Envíos a Todo el País"
-              description="Entregas a cualquier parte de Argentina"
-            />
-            <FeatureCardHero
-              icon={
+              </div>
+              <h3 className="text-lg md:text-xl font-black text-white mb-2 uppercase tracking-tight">
+                Envíos a Todo el País
+              </h3>
+              <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                Nos encontramos en Berazategui. Envíos a todo el país por correo argentino.
+                <br />
+                Si estás en los alrededores podemos enviar por motomensajería o coordinar punto de encuentro.
+              </p>
+            </div>
+            <div className="flex flex-col items-center text-center group">
+              <div className="text-green-400 mb-3 md:mb-4 transform group-hover:scale-110 transition-transform duration-300">
                 <svg className="w-12 h-12 md:w-14 md:h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
-              }
-              title="Pagá Como Quieras"
-              description="Mercado Pago, transferencia o efectivo"
-            />
-            <FeatureCardHero
-              icon={
+              </div>
+              <h3 className="text-lg md:text-xl font-black text-white mb-2 uppercase tracking-tight">
+                Pagá Como Quieras
+              </h3>
+              <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                Efectivo o transferencia.
+                <br />
+                Cualquier banco o entidad financiera.
+              </p>
+            </div>
+            <div className="flex flex-col items-center text-center group">
+              <div className="text-green-400 mb-3 md:mb-4 transform group-hover:scale-110 transition-transform duration-300">
                 <svg className="w-12 h-12 md:w-14 md:h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-              }
-              title="Comprá con Seguridad"
-              description="Tus datos siempre protegidos"
-            />
+              </div>
+              <h3 className="text-lg md:text-xl font-black text-white mb-2 uppercase tracking-tight">
+                Comprá con Seguridad
+              </h3>
+              <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                Comprá con seguridad, si querés que te guiemos solo decinos o si tenés alguna duda de algún producto consultanos.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -129,13 +153,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Categorías con Carrusel */}
+      {/* Categorías con Bento Grid */}
       <section className="relative py-6 md:py-20 z-10">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl md:text-3xl font-bold text-white mb-4 md:mb-12 text-center">
             CATEGORÍAS PRINCIPALES
           </h2>
-          <CategoryCarousel />
+          <BentoGridCategories />
         </div>
       </section>
 
@@ -171,15 +195,6 @@ const categoryGradients: { [key: string]: string } = {
   'medicion': 'from-purple-500 to-purple-600',
 }
 
-const categoryDescriptions: { [key: string]: string } = {
-  'fertilizantes': 'Nutrición para todas las etapas',
-  'iluminacion': 'Tecnología LED de punta',
-  'sustratos': 'Medios de cultivo premium',
-  'macetas': 'Contenedores profesionales',
-  'ventilacion': 'Control de clima óptimo',
-  'medicion': 'Equipos de precisión',
-}
-
 interface Category {
   id: string
   name: string
@@ -188,12 +203,9 @@ interface Category {
   color: string | null
 }
 
-function CategoryCarousel() {
+// Glassmorphism 3D Categories
+function BentoGridCategories() {
   const [categories, setCategories] = useState<Category[]>([])
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [mobileIndex, setMobileIndex] = useState(0)
-  const cardsPerView = 3
-  const mobileCardsPerView = 4
 
   useEffect(() => {
     fetchCategories()
@@ -201,7 +213,7 @@ function CategoryCarousel() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/admin/categories')
+      const response = await fetch('/api/admin/categories?section=GROW')
       if (response.ok) {
         const data = await response.json()
         setCategories(data)
@@ -210,25 +222,6 @@ function CategoryCarousel() {
       console.error('Error al cargar categorías:', error)
     }
   }
-
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + cardsPerView >= categories.length ? 0 : prev + cardsPerView))
-  }
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - cardsPerView < 0 ? Math.max(0, categories.length - cardsPerView) : prev - cardsPerView))
-  }
-
-  const nextMobileSlide = () => {
-    setMobileIndex((prev) => (prev + mobileCardsPerView >= categories.length ? 0 : prev + mobileCardsPerView))
-  }
-
-  const prevMobileSlide = () => {
-    setMobileIndex((prev) => (prev - mobileCardsPerView < 0 ? Math.max(0, categories.length - mobileCardsPerView) : prev - mobileCardsPerView))
-  }
-
-  const visibleCategories = categories.slice(currentIndex, currentIndex + cardsPerView)
-  const visibleMobileCategories = categories.slice(mobileIndex, mobileIndex + mobileCardsPerView)
 
   if (categories.length === 0) {
     return (
@@ -240,182 +233,201 @@ function CategoryCarousel() {
 
   return (
     <>
-      {/* Mobile: Carrusel con 4 categorías (2x2) */}
-      <div className="md:hidden relative">
-        {/* Carrusel Mobile */}
-        <div className="grid grid-cols-2 gap-3 px-2">
-          {visibleMobileCategories.map((category) => (
-            <FlipCard
-              key={category.id}
-              id={category.id}
-              title={category.name}
-              description={category.description || categoryDescriptions[category.slug] || ''}
-              color={category.color || '#10b981'}
-            />
-          ))}
-        </div>
-
-        {/* Controles Mobile */}
-        {categories.length > mobileCardsPerView && (
-          <>
-            {/* Botones de navegación */}
-            <div className="flex items-center justify-center gap-4 mt-6">
-              <button
-                onClick={prevMobileSlide}
-                className="p-3 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={mobileIndex === 0}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              {/* Indicadores */}
-              <div className="flex gap-2">
-                {Array.from({ length: Math.ceil(categories.length / mobileCardsPerView) }).map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setMobileIndex(idx * mobileCardsPerView)}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      Math.floor(mobileIndex / mobileCardsPerView) === idx
-                        ? 'bg-green-500 w-6'
-                        : 'bg-gray-600 hover:bg-gray-500'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              <button
-                onClick={nextMobileSlide}
-                className="p-3 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={mobileIndex + mobileCardsPerView >= categories.length}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+      {/* Mobile: Simple Grid 2x2 */}
+      <div className="md:hidden grid grid-cols-2 gap-3">
+        {categories.slice(0, 6).map((category, idx) => (
+          <Link
+            key={category.id}
+            href={`/productos?categoria=${category.id}`}
+            className="group relative h-36 rounded-xl overflow-hidden backdrop-blur-xl border border-white/10"
+            style={{
+              background: `linear-gradient(135deg, ${category.color || '#10b981'}40, ${category.color || '#10b981'}20)`,
+              animation: `fadeInUp 0.5s ease-out ${idx * 0.1}s both`
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
+            <div className="relative h-full p-3 flex items-center justify-center">
+              <h3 className="text-base font-black text-white text-center leading-tight">
+                {category.name}
+              </h3>
             </div>
-          </>
-        )}
+          </Link>
+        ))}
       </div>
 
-      {/* Desktop: Carrusel */}
-      <div className="hidden md:block relative">
-        {/* Botón Anterior */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={currentIndex === 0}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-
-        {/* Carrusel */}
-        <div className="grid grid-cols-3 gap-8 px-12">
-          {visibleCategories.map((category, idx) => (
-            <FlipCard
-              key={category.id}
-              id={category.id}
-              title={category.name}
-              description={category.description || categoryDescriptions[category.slug] || ''}
-              color={category.color || '#10b981'}
-            />
-          ))}
-        </div>
-
-        {/* Botón Siguiente */}
-        <button
-          onClick={nextSlide}
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={currentIndex + cardsPerView >= categories.length}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-
-        {/* Indicadores */}
-        <div className="flex justify-center gap-2 mt-8">
-          {Array.from({ length: Math.ceil(categories.length / cardsPerView) }).map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx * cardsPerView)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                Math.floor(currentIndex / cardsPerView) === idx
-                  ? 'bg-green-500 w-8'
-                  : 'bg-gray-600 hover:bg-gray-500'
-              }`}
-            />
-          ))}
-        </div>
+      {/* Desktop: Glassmorphism Grid */}
+      <div className="hidden md:grid grid-cols-3 gap-6">
+        {categories.slice(0, 6).map((category, idx) => (
+          <GlassCard key={category.id} category={category} delay={idx * 0.15} />
+        ))}
       </div>
+
+      {/* Ver todas link */}
+      {categories.length > 6 && (
+        <div className="flex justify-center mt-12">
+          <Link
+            href="/productos"
+            className="group px-8 py-4 relative overflow-hidden rounded-2xl backdrop-blur-xl border border-white/20 font-bold text-white transition-all duration-300 hover:scale-105"
+            style={{
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.2))'
+            }}
+          >
+            <span className="relative z-10">Ver Todas las Categorías</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </Link>
+        </div>
+      )}
     </>
   )
 }
 
-function FlipCard({
-  id,
-  title,
-  description,
-  color
+// Glass Card with 3D Tilt
+function GlassCard({
+  category,
+  delay = 0
 }: {
-  id: string
-  title: string
-  description: string
-  color: string
+  category: Category
+  delay?: number
 }) {
-  const [isFlipped, setIsFlipped] = useState(false)
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+  const [isHovered, setIsHovered] = useState(false)
+  const cardRef = useState<HTMLDivElement | null>(null)
+
+  const color = category.color || '#10b981'
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const card = e.currentTarget
+    const rect = card.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+
+    const rotateX = ((y - centerY) / centerY) * -10
+    const rotateY = ((x - centerX) / centerX) * 10
+
+    setTilt({ x: rotateX, y: rotateY })
+  }
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 })
+    setIsHovered(false)
+  }
 
   return (
-    <>
-      {/* Mobile: Card simple sin flip */}
-      <Link
-        href={`/productos?categoria=${id}`}
-        className="md:hidden h-40 rounded-xl p-4 shadow-lg border border-gray-700 flex items-center justify-center transition-all"
+    <Link
+      href={`/productos?categoria=${category.id}`}
+      className="group relative block"
+      style={{
+        animation: `fadeInUp 0.6s ease-out ${delay}s both`,
+        perspective: '1000px'
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Glow effect background */}
+      <div
+        className="absolute -inset-1 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{
-          background: `linear-gradient(to bottom right, ${color}, ${color}dd)`
+          background: `linear-gradient(135deg, ${color}60, ${color}30)`
+        }}
+      />
+
+      {/* Main card */}
+      <div
+        className="relative h-56 rounded-2xl backdrop-blur-2xl border border-white/10 overflow-hidden transition-all duration-500"
+        style={{
+          background: `linear-gradient(135deg, ${color}25, ${color}10)`,
+          transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(${isHovered ? '20px' : '0'})`,
+          boxShadow: isHovered
+            ? `0 30px 60px ${color}40, 0 0 0 1px ${color}30 inset`
+            : '0 10px 30px rgba(0,0,0,0.3)'
         }}
       >
-        <h3 className="text-lg font-black text-white text-center">{title}</h3>
-      </Link>
+        {/* Glass reflection */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
 
-      {/* Desktop: Flip card */}
-      <div
-        className="hidden md:block h-56 cursor-pointer perspective-1000"
-        onMouseEnter={() => setIsFlipped(true)}
-        onMouseLeave={() => setIsFlipped(false)}
-      >
+        {/* Animated gradient orb */}
         <div
-          className={`relative w-full h-full transition-all duration-700 transform-style-3d ${
-            isFlipped ? 'rotate-y-180' : ''
-          }`}
-        >
-          {/* Front */}
-          <div className="absolute w-full h-full backface-hidden bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 shadow-2xl border border-gray-700 flex flex-col items-center justify-center text-center">
-            <h3 className="text-2xl font-black text-white">{title}</h3>
+          className="absolute w-32 h-32 rounded-full blur-3xl opacity-30 transition-all duration-700"
+          style={{
+            background: `radial-gradient(circle, ${color}, transparent)`,
+            top: isHovered ? '-20%' : '10%',
+            right: isHovered ? '-20%' : '10%',
+          }}
+        />
+
+        {/* Content */}
+        <div className="relative h-full p-6 flex flex-col justify-between z-10">
+          {/* Icon */}
+          <div className="flex items-start justify-between">
+            <div
+              className="p-3 rounded-xl backdrop-blur-xl transition-all duration-500"
+              style={{
+                background: `linear-gradient(135deg, ${color}40, ${color}20)`,
+                transform: isHovered ? 'scale(1.1) rotate(-5deg)' : 'scale(1)',
+                boxShadow: isHovered ? `0 10px 30px ${color}60` : 'none'
+              }}
+            >
+              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+            </div>
+
+            {/* Color indicator */}
+            <div
+              className="w-3 h-3 rounded-full transition-all duration-300"
+              style={{
+                background: color,
+                boxShadow: `0 0 20px ${color}80`,
+                transform: isHovered ? 'scale(1.3)' : 'scale(1)'
+              }}
+            />
           </div>
 
-          {/* Back */}
-          <div
-            className="absolute w-full h-full backface-hidden rounded-xl p-6 shadow-2xl rotate-y-180 flex flex-col items-center justify-center text-center"
-            style={{
-              background: `linear-gradient(to bottom right, ${color}, ${color}dd)`
-            }}
-          >
-            <h3 className="text-2xl font-black text-white mb-4">{title}</h3>
-            <p className="text-white/90 text-sm leading-relaxed mb-4">{description}</p>
-            <Link
-              href={`/productos?categoria=${id}`}
-              className="px-4 py-2 bg-white text-black text-sm font-bold rounded-lg hover:scale-110 transition-transform duration-300 shadow-xl"
+          {/* Title */}
+          <div>
+            <h3
+              className="text-2xl font-black text-white mb-2 transition-all duration-300 leading-tight"
+              style={{
+                textShadow: `0 0 30px ${color}60`,
+                transform: isHovered ? 'translateY(-5px)' : 'translateY(0)'
+              }}
             >
-              Explorar
-            </Link>
+              {category.name}
+            </h3>
+
+            {/* CTA */}
+            <div className="flex items-center gap-2 mt-3 text-white/80 group-hover:text-white transition-colors">
+              <span className="text-xs font-semibold">Explorar</span>
+              <svg
+                className="w-4 h-4 transition-transform duration-300"
+                style={{
+                  transform: isHovered ? 'translateX(5px)' : 'translateX(0)'
+                }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </div>
           </div>
         </div>
+
+        {/* Shine effect */}
+        <div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+          style={{
+            background: `linear-gradient(45deg, transparent 30%, ${color}20 50%, transparent 70%)`,
+            transform: 'translateX(-100%)',
+            animation: isHovered ? 'shine 2s infinite' : 'none'
+          }}
+        />
       </div>
-    </>
+    </Link>
   )
 }
 
@@ -428,7 +440,7 @@ interface LatestProduct {
   isOnSale: boolean
   salePrice: number | null
   images: { url: string; alt: string | null }[]
-  category: { id: string; name: string } | null
+  category: { id: string; name: string; imageFit?: 'COVER' | 'CONTAIN' } | null
   variants: { stock: number }[]
 }
 
@@ -528,21 +540,6 @@ function FeaturedProducts() {
               </svg>
             </button>
 
-            {/* Indicadores */}
-            <div className="flex gap-2">
-              {Array.from({ length: Math.ceil(products.length / mobileProductsPerView) }).map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setMobileIndex(idx * mobileProductsPerView)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    Math.floor(mobileIndex / mobileProductsPerView) === idx
-                      ? 'bg-purple-500 w-6'
-                      : 'bg-gray-600 hover:bg-gray-500'
-                  }`}
-                />
-              ))}
-            </div>
-
             <button
               onClick={nextMobileSlide}
               className="p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -593,12 +590,12 @@ function FeaturedProducts() {
 
         {/* Indicadores */}
         {products.length > productsPerView && (
-          <div className="flex justify-center gap-2 mt-8">
+          <div className="flex flex-wrap justify-center gap-2 mt-8 max-w-full px-12">
             {Array.from({ length: Math.ceil(products.length / productsPerView) }).map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentIndex(idx * productsPerView)}
-                className={`w-2 h-2 rounded-full transition-all ${
+                className={`shrink-0 w-2 h-2 rounded-full transition-all ${
                   Math.floor(currentIndex / productsPerView) === idx
                     ? 'bg-purple-500 w-8'
                     : 'bg-gray-600 hover:bg-gray-500'
@@ -652,6 +649,7 @@ function FeaturedProductCard({
           images={product.images}
           productName={product.name}
           compact={true}
+          imageFit={product.category?.imageFit}
         />
         {getTotalStock(product) === 0 && (
           <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
@@ -678,25 +676,25 @@ function FeaturedProductCard({
         {product.isOnSale && product.salePrice ? (
           <div className="space-y-1">
             {/* Precio anterior tachado */}
-            <div className="text-base text-gray-400 line-through">
-              ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+            <div className="text-sm sm:text-base text-gray-400 line-through">
+              ${parseFloat(product.price.toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
             </div>
             {/* Precio de oferta en dorado */}
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-black text-yellow-400">
-                ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+              <span className="text-lg sm:text-2xl font-black whitespace-nowrap text-yellow-400">
+                ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
               </span>
-              <button className="p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
+              <button className="p-1.5 sm:p-2 shrink-0 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
                 <ShoppingCart className="w-5 h-5" />
               </button>
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-black text-purple-400">
-              ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+            <span className="text-lg sm:text-2xl font-black whitespace-nowrap text-purple-400">
+              ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
             </span>
-            <button className="p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all">
+            <button className="p-1.5 sm:p-2 shrink-0 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all">
               <ShoppingCart className="w-5 h-5" />
             </button>
           </div>
@@ -799,6 +797,7 @@ function OfferProducts() {
                     images={product.images}
                     productName={product.name}
                     compact={true}
+                    imageFit={product.category?.imageFit}
                   />
                   {getTotalStock(product) === 0 && (
                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
@@ -824,24 +823,24 @@ function OfferProducts() {
 
                   {product.isOnSale && product.salePrice ? (
                     <div className="space-y-1">
-                      <div className="text-base text-gray-400 line-through">
-                        ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                      <div className="text-sm sm:text-base text-gray-400 line-through">
+                        ${parseFloat(product.price.toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl font-black text-yellow-400">
-                          ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                        <span className="text-lg sm:text-2xl font-black whitespace-nowrap text-yellow-400">
+                          ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                         </span>
-                        <button className="p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
+                        <button className="p-1.5 sm:p-2 shrink-0 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
                           <ShoppingCart className="w-5 h-5" />
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-black text-green-400">
-                        ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                    <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                      <span className="text-lg sm:text-2xl font-black whitespace-nowrap text-green-400">
+                        ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                       </span>
-                      <button className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
+                      <button className="p-1.5 sm:p-2 shrink-0 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
                         <ShoppingCart className="w-5 h-5" />
                       </button>
                     </div>
@@ -866,12 +865,12 @@ function OfferProducts() {
             </button>
 
             {/* Indicadores */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap justify-center gap-2 max-w-[70vw]">
               {Array.from({ length: Math.ceil(products.length / mobileProductsPerView) }).map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setMobileIndex(idx * mobileProductsPerView)}
-                  className={`w-2 h-2 rounded-full transition-all ${
+                  className={`shrink-0 w-2 h-2 rounded-full transition-all ${
                     Math.floor(mobileIndex / mobileProductsPerView) === idx
                       ? 'bg-green-500 w-6'
                       : 'bg-gray-600 hover:bg-gray-500'
@@ -920,6 +919,7 @@ function OfferProducts() {
                   images={product.images}
                   productName={product.name}
                   compact={true}
+                  imageFit={product.category?.imageFit}
                 />
                 {getTotalStock(product) === 0 && (
                   <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
@@ -946,25 +946,25 @@ function OfferProducts() {
                 {product.isOnSale && product.salePrice ? (
                   <div className="space-y-1">
                     {/* Precio anterior tachado */}
-                    <div className="text-base text-gray-400 line-through">
-                      ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                    <div className="text-sm sm:text-base text-gray-400 line-through">
+                      ${parseFloat(product.price.toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                     </div>
                     {/* Precio de oferta en dorado */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-black text-yellow-400">
-                        ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                    <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                      <span className="text-lg sm:text-2xl font-black whitespace-nowrap text-yellow-400">
+                        ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                       </span>
-                      <button className="p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
+                      <button className="p-1.5 sm:p-2 shrink-0 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
                         <ShoppingCart className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-black text-green-400">
-                      ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                    <span className="text-lg sm:text-2xl font-black whitespace-nowrap text-green-400">
+                      ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                     </span>
-                    <button className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
+                    <button className="p-1.5 sm:p-2 shrink-0 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
                       <ShoppingCart className="w-5 h-5" />
                     </button>
                   </div>

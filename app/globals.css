@@ -633,3 +633,27 @@ select option {
 .prose a:hover {
   color: #22c55e;
 }
+
+/* ============= GLASSMORPHISM 3D ANIMATIONS ============= */
+
+/* Animación fade in hacia arriba */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Shine effect para glassmorphism */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

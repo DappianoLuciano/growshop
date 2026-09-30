@@ -11,6 +11,8 @@ export default function NuevaCategoriaPage() {
     name: '',
     description: '',
     color: '#10b981', // Verde por defecto
+    section: 'GROW',
+    imageFit: 'COVER',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -89,6 +91,43 @@ export default function NuevaCategoriaPage() {
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   El slug se generará automáticamente a partir del nombre
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="section" className="block text-sm font-semibold text-gray-300 mb-2">
+                  Sección *
+                </label>
+                <select
+                  id="section"
+                  value={formData.section}
+                  onChange={(e) => setFormData({ ...formData, section: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-green-500 transition-all"
+                >
+                  <option value="GROW">Productos Grow</option>
+                  <option value="FERRETERIA">Ferretería</option>
+                  <option value="ACCESORIOS">Accesorios</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Define en qué sección de la tienda aparece esta categoría
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="imageFit" className="block text-sm font-semibold text-gray-300 mb-2">
+                  Ajuste de las fotos
+                </label>
+                <select
+                  id="imageFit"
+                  value={formData.imageFit}
+                  onChange={(e) => setFormData({ ...formData, imageFit: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-green-500 transition-all"
+                >
+                  <option value="COVER">Rellenar (recorta la foto para llenar el cuadro)</option>
+                  <option value="CONTAIN">Ajustar completa (se ve la foto entera, sin recortar)</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Usá "Ajustar completa" para categorías con fotos que no son cuadradas (ej. lentes)
                 </p>
               </div>
 

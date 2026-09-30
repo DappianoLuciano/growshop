@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, Suspense } from 'react'
 import { ArrowLeft, ShoppingCart, Loader2, Check } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import ProductImageCarousel from '@/components/store/ProductImageCarousel'
 import { useCart } from '@/contexts/CartContext'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface Product {
   id: string
@@ -31,12 +31,24 @@ interface Product {
     id: string
     name: string
     description: string | null
+    imageFit?: 'COVER' | 'CONTAIN'
+    section?: 'GROW' | 'FERRETERIA' | 'ACCESORIOS'
   } | null
 }
 
-export default function ProductoDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+const sectionBack: Record<string, { url: string; label: string }> = {
+  productos: { url: '/productos', label: 'Volver a Productos' },
+  ferreteria: { url: '/ferreteria', label: 'Volver a Ferretería' },
+  accesorios: { url: '/accesorios', label: 'Volver a Accesorios' },
+  ofertas: { url: '/ofertas', label: 'Volver a Ofertas' },
+  combos: { url: '/combos', label: 'Volver a Combos' },
+}
+
+function ProductoDetailContent({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const fromParam = searchParams.get('from')
   const { addItem } = useCart()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -125,7 +137,10 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
       size: variant.size,
       capacity: variant.capacity,
       power: variant.power,
-      price: parseFloat(getProductPrice(product).toString()),
+      // Misma regla que el servidor (lib/orders/pricing.ts): oferta > variante > base
+      price: parseFloat(
+        (product.isOnSale && product.salePrice ? product.salePrice : variant.price || product.price).toString()
+      ),
       image: product.images[0]?.url || null,
       maxStock: variant.stock,
     })
@@ -166,8 +181,17 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
 
   const totalStock = getTotalStock(product)
   const variant = product.variants[0]
-  const backUrl = product.isOnSale ? '/ofertas' : '/productos'
-  const backText = product.isOnSale ? 'Volver a Ofertas' : 'Volver a Productos'
+
+  const fallbackSection = product.category?.section === 'FERRETERIA'
+    ? 'ferreteria'
+    : product.category?.section === 'ACCESORIOS'
+      ? 'accesorios'
+      : product.isOnSale
+        ? 'ofertas'
+        : 'productos'
+  const back = sectionBack[fromParam || ''] || sectionBack[fallbackSection]
+  const backUrl = back.url
+  const backText = back.label
 
   return (
     <div className="relative bg-black min-h-screen">
@@ -203,6 +227,7 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
                     compact={false}
                     currentIndex={currentImageIndex}
                     onIndexChange={setCurrentImageIndex}
+                    imageFit={product.category?.imageFit}
                   />
                 </div>
 
@@ -231,7 +256,9 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`relative aspect-square bg-gray-800 rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                        product.category?.imageFit === 'CONTAIN' ? 'bg-white' : 'bg-gray-800'
+                      } ${
                         currentImageIndex === index
                           ? 'border-green-500 ring-2 ring-green-500/30'
                           : 'border-gray-700 hover:border-green-500/50'
@@ -241,7 +268,7 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
                         src={image.url}
                         alt={image.alt || `${product.name} - ${index + 1}`}
                         fill
-                        className="object-cover"
+                        className={product.category?.imageFit === 'CONTAIN' ? 'object-contain p-1' : 'object-cover'}
                       />
                     </button>
                   ))}
@@ -326,17 +353,17 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-400">Precio normal:</span>
                         <span className="text-xl text-gray-400 line-through">
-                          ${parseFloat(product.price.toString()).toLocaleString('es-AR')}
+                          ${parseFloat(product.price.toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                         </span>
                       </div>
 
                       {/* Precio de oferta en dorado */}
                       <div className="flex items-baseline gap-2">
                         <span className="text-3xl font-black text-yellow-400">
-                          ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                          ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                         </span>
                         <span className="text-sm text-yellow-400 font-semibold">
-                          ¡Ahorrás ${(parseFloat(product.price.toString()) - parseFloat(product.salePrice.toString())).toLocaleString('es-AR')}!
+                          ¡Ahorrás ${(parseFloat(product.price.toString()) - parseFloat(product.salePrice.toString())).toLocaleString('es-AR', { maximumFractionDigits: 0 })}!
                         </span>
                       </div>
                     </div>
@@ -344,7 +371,7 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
                 ) : (
                   <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-3xl font-black text-green-400">
-                      ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR')}
+                      ${parseFloat(getProductPrice(product).toString()).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                     </span>
                   </div>
                 )}
@@ -418,13 +445,13 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
                       )}
 
                       {/* Imagen */}
-                      <div className="relative aspect-square bg-gray-800">
+                      <div className={`relative aspect-square ${suggestedProduct.category?.imageFit === 'CONTAIN' ? 'bg-white' : 'bg-gray-800'}`}>
                         {suggestedProduct.images[0] ? (
                           <Image
                             src={suggestedProduct.images[0].url}
                             alt={suggestedProduct.images[0].alt || suggestedProduct.name}
                             fill
-                            className="object-cover"
+                            className={suggestedProduct.category?.imageFit === 'CONTAIN' ? 'object-contain p-2' : 'object-cover'}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
@@ -477,5 +504,19 @@ export default function ProductoDetailPage({ params }: { params: Promise<{ slug:
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ProductoDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  return (
+    <Suspense fallback={
+      <div className="relative bg-black min-h-screen">
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="w-8 h-8 text-green-500 animate-spin" />
+        </div>
+      </div>
+    }>
+      <ProductoDetailContent params={params} />
+    </Suspense>
   )
 }

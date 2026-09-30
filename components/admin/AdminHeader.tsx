@@ -46,13 +46,6 @@ export default function AdminHeader() {
 
           {/* Actions */}
           <div className="flex items-center gap-2 sm:gap-4">
-            <Link
-              href="/"
-              className="text-gray-400 hover:text-white text-xs sm:text-sm font-semibold transition-colors"
-            >
-              <span className="hidden sm:inline">Ver Tienda</span>
-              <span className="sm:hidden">Tienda</span>
-            </Link>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-lg transition-all text-xs sm:text-sm font-semibold"

@@ -179,14 +179,14 @@ export default function CombosPage() {
                       {combo.products.length} producto{combo.products.length !== 1 ? 's' : ''}
                     </p>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-black text-green-400">
+                    <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                      <span className="text-lg sm:text-2xl font-black whitespace-nowrap text-green-400">
                         ${formatPrice(combo.price)}
                       </span>
                       <button
                         onClick={(e) => handleAddToCart(e, combo)}
                         disabled={available === 0}
-                        className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-1.5 sm:p-2 shrink-0 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <ShoppingCart className="w-5 h-5" />
                       </button>
