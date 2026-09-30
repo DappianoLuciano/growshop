@@ -2,12 +2,17 @@ import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
 import SessionProvider from '@/components/admin/SessionProvider'
 import ProtectedLayout from '@/components/admin/ProtectedLayout'
+import { requireAuth } from '@/lib/auth/require-auth'
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Verificación en el servidor: sin sesión de admin redirige a /login
+  // antes de enviar el panel (ProtectedLayout solo lo hace en el navegador)
+  await requireAuth()
+
   return (
     <SessionProvider>
       <ProtectedLayout>
