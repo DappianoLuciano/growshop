@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v2 as cloudinary } from 'cloudinary'
+import { requireAdminApi } from '@/lib/auth/require-admin'
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']
+const MAX_SIZE = 10 * 1024 * 1024 // 10 MB
 
 // Configurar Cloudinary
 const cloud_name = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
@@ -17,6 +21,10 @@ cloudinary.config({
 })
 
 export async function POST(request: NextRequest) {
+  // Solo admins pueden subir archivos
+  const { error } = await requireAdminApi()
+  if (error) return error
+
   try {
     // Verificar configuración
     if (!cloud_name || !api_key || !api_secret) {
@@ -27,10 +35,16 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-    const file = formData.get('file') as File
+    const file = formData.get('file')
 
-    if (!file) {
+    if (!(file instanceof File)) {
       return NextResponse.json({ error: 'No se envió ningún archivo' }, { status: 400 })
+    }
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json({ error: 'Formato no permitido (usar JPG, PNG, WEBP, GIF o AVIF)' }, { status: 400 })
+    }
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ error: 'La imagen supera los 10 MB' }, { status: 400 })
     }
 
     // Convertir el archivo a base64
@@ -42,18 +56,15 @@ export async function POST(request: NextRequest) {
     // Subir a Cloudinary
     const result = await cloudinary.uploader.upload(dataUri, {
       folder: 'growshop-products',
-      resource_type: 'auto',
+      resource_type: 'image',
     })
 
     return NextResponse.json({
       url: result.secure_url,
       public_id: result.public_id,
     })
-  } catch (error: any) {
-    console.error('Error al subir imagen:', error)
-    return NextResponse.json(
-      { error: 'Error al subir imagen', details: error.message || String(error) },
-      { status: 500 }
-    )
+  } catch (err) {
+    console.error('Error al subir imagen:', err)
+    return NextResponse.json({ error: 'Error al subir imagen' }, { status: 500 })
   }
 }

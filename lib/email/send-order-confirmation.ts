@@ -1,4 +1,4 @@
-import { resend } from './resend'
+import { resend, EMAIL_FROM } from './resend'
 import { generateOrderConfirmationEmail } from './templates/order-confirmation'
 
 interface OrderItem {
@@ -25,34 +25,19 @@ interface SendOrderConfirmationEmailParams {
 }
 
 export async function sendOrderConfirmationEmail(params: SendOrderConfirmationEmailParams) {
-  console.log('📧 [sendOrderConfirmationEmail] Iniciando...')
-  console.log('📧 [sendOrderConfirmationEmail] Destinatario:', params.to)
-  console.log('📧 [sendOrderConfirmationEmail] Orden:', params.orderNumber)
-
   const html = generateOrderConfirmationEmail(params)
-  console.log('📧 [sendOrderConfirmationEmail] HTML generado, longitud:', html.length)
 
-  try {
-    console.log('📧 [sendOrderConfirmationEmail] Llamando a resend.emails.send...')
-    const { data, error } = await resend.emails.send({
-      from: 'Grow Shop <pedidos@tudominio.com>', // Reemplaza con tu dominio verificado
-      to: params.to,
-      subject: `Pedido Confirmado - ${params.orderNumber}`,
-      html,
-    })
+  const { data, error } = await resend.emails.send({
+    from: EMAIL_FROM,
+    to: params.to,
+    subject: `Pedido Confirmado - ${params.orderNumber}`,
+    html,
+  })
 
-    if (error) {
-      console.error('❌ [sendOrderConfirmationEmail] Error de Resend:', error)
-      throw new Error(`Error al enviar email: ${error.message}`)
-    }
-
-    console.log('✅ [sendOrderConfirmationEmail] Email enviado exitosamente!')
-    console.log('✅ [sendOrderConfirmationEmail] ID del email:', data?.id)
-    return data
-  } catch (error: any) {
-    console.error('❌ [sendOrderConfirmationEmail] Error capturado:', error)
-    console.error('❌ [sendOrderConfirmationEmail] Mensaje:', error.message)
-    console.error('❌ [sendOrderConfirmationEmail] Stack:', error.stack)
-    throw error
+  if (error) {
+    throw new Error(`Error al enviar email: ${error.message}`)
   }
+
+  console.log(`✅ Email de confirmación enviado (orden ${params.orderNumber}, id ${data?.id})`)
+  return data
 }

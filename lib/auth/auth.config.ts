@@ -2,6 +2,11 @@ import type { NextAuthConfig } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { compare } from 'bcryptjs'
 import { prisma } from '@/lib/db/prisma'
+import { rateLimit, isRateLimited, getClientIp } from '@/lib/rate-limit'
+
+const LOGIN_WINDOW_MS = 15 * 60 * 1000
+const LOGIN_MAX_PER_EMAIL = 5
+const LOGIN_MAX_PER_IP = 20
 
 export const authConfig: NextAuthConfig = {
   trustHost: true, // Necesario para Vercel
@@ -12,26 +17,34 @@ export const authConfig: NextAuthConfig = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         if (!credentials?.email || !credentials?.password) {
+          return null
+        }
+
+        const email = String(credentials.email).trim()
+        const emailKey = `login-email:${email.toLowerCase()}`
+        const ipKey = `login-ip:${getClientIp(request.headers)}`
+
+        // Frena fuerza bruta: se revisa antes de consultar la base
+        if (isRateLimited(emailKey, LOGIN_MAX_PER_EMAIL) || isRateLimited(ipKey, LOGIN_MAX_PER_IP)) {
+          console.warn(`Login bloqueado por demasiados intentos (${emailKey}, ${ipKey})`)
           return null
         }
 
         try {
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email as string },
+            where: { email },
           })
 
-          if (!user) {
-            return null
-          }
+          const isPasswordValid = user
+            ? await compare(credentials.password as string, user.password)
+            : false
 
-          const isPasswordValid = await compare(
-            credentials.password as string,
-            user.password
-          )
-
-          if (!isPasswordValid) {
+          if (!user || !isPasswordValid) {
+            // Solo los intentos fallidos cuentan para el límite
+            rateLimit(emailKey, LOGIN_MAX_PER_EMAIL, LOGIN_WINDOW_MS)
+            rateLimit(ipKey, LOGIN_MAX_PER_IP, LOGIN_WINDOW_MS)
             return null
           }
 

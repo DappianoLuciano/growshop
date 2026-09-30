@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
+import { isAdmin } from '@/lib/auth/require-admin'
 
 /**
  * GET /api/profits
@@ -9,7 +10,7 @@ import { auth } from '@/lib/auth/auth'
 export async function GET(request: NextRequest) {
   // Verificar autenticación
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 

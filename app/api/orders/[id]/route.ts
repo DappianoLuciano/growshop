@@ -1,7 +1,67 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/db/prisma'
 import { sendOrderConfirmationEmail } from '@/lib/email/send-order-confirmation'
+import { sendOrderShippedEmail } from '@/lib/email/send-order-shipped'
 import { auth } from '@/lib/auth/auth'
+import { isAdmin } from '@/lib/auth/require-admin'
+import { notifyLowStock } from '@/lib/telegram'
+
+const PAYMENT_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'REFUNDED'] as const
+const ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'SHIPPED', 'DELIVERED', 'CANCELLED'] as const
+type OrderStatus = (typeof ORDER_STATUSES)[number]
+
+// Desde qué estados se puede pasar a cuáles (el resto se rechaza)
+const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ['CONFIRMED', 'PREPARING', 'READY', 'SHIPPED', 'CANCELLED'],
+  CONFIRMED: ['PENDING', 'PREPARING', 'READY', 'SHIPPED', 'CANCELLED'],
+  PREPARING: ['CONFIRMED', 'READY', 'SHIPPED', 'CANCELLED'],
+  READY: ['PREPARING', 'SHIPPED', 'DELIVERED', 'CANCELLED'],
+  SHIPPED: ['DELIVERED', 'CANCELLED'],
+  DELIVERED: [],
+  CANCELLED: ['PENDING'],
+}
+
+const patchSchema = z.object({
+  paymentStatus: z.enum(PAYMENT_STATUSES).optional(),
+  status: z.enum(ORDER_STATUSES).optional(),
+  trackingNumber: z.string().trim().min(1).max(100).optional(),
+})
+
+class HttpError extends Error {
+  constructor(public status: number, message: string) {
+    super(message)
+  }
+}
+
+type StockItem = {
+  quantity: number
+  variantId: string | null
+  combo: { products: Array<{ variantId: string; quantity: number }> } | null
+}
+
+// El stock está descontado mientras el pago esté aprobado y el pedido no esté cancelado
+function holdsStock(order: { paymentStatus: string; status: string }) {
+  return order.paymentStatus === 'APPROVED' && order.status !== 'CANCELLED'
+}
+
+// Unidades por variante que ocupa un pedido (incluye las de los combos)
+function stockMovements(items: StockItem[]) {
+  const movements = new Map<string, number>()
+  const add = (variantId: string, qty: number) =>
+    movements.set(variantId, (movements.get(variantId) || 0) + qty)
+
+  for (const item of items) {
+    if (item.combo) {
+      for (const cp of item.combo.products) add(cp.variantId, cp.quantity * item.quantity)
+    } else if (item.variantId) {
+      add(item.variantId, item.quantity)
+    }
+  }
+  return movements
+}
+
+const stockItemsInclude = { items: { include: { combo: { include: { products: true } } } } } as const
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +69,7 @@ export async function GET(
 ) {
   // Verificar autenticación
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
@@ -40,12 +100,9 @@ export async function GET(
     }
 
     return NextResponse.json(order)
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error al obtener orden:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener orden', details: error.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Error al obtener orden' }, { status: 500 })
   }
 }
 
@@ -55,101 +112,113 @@ export async function PATCH(
 ) {
   // Verificar autenticación - solo admin puede aprobar pagos
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'JSON inválido' }, { status: 400 })
+  }
+
+  const parsed = patchSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 })
+  }
+  const { paymentStatus, status, trackingNumber } = parsed.data
+
   try {
     const { id } = await params
-    const body = await request.json()
-    const { paymentStatus, status } = body
+    const touchedVariantIds: string[] = []
 
-    // Si se aprueba el pago, descontar stock
-    if (paymentStatus === 'APPROVED') {
-      const order = await prisma.order.findUnique({
-        where: { id },
-        include: {
-          items: true,
-        },
-      })
+    // Todo en una transacción: si falta stock de algún item, no se descuenta nada
+    const { updatedOrder, previous } = await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({ where: { id }, include: stockItemsInclude })
+      if (!order) throw new HttpError(404, 'Orden no encontrada')
 
-      if (!order) {
-        return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
+      if (paymentStatus === 'APPROVED' && order.paymentStatus === 'APPROVED') {
+        throw new HttpError(400, 'El pago ya fue aprobado')
+      }
+      if (status && status !== order.status && !ALLOWED_TRANSITIONS[order.status].includes(status)) {
+        throw new HttpError(400, `No se puede pasar un pedido de ${order.status} a ${status}`)
       }
 
-      // Verificar que el pago no esté ya aprobado
-      if (order.paymentStatus === 'APPROVED') {
-        return NextResponse.json({ error: 'El pago ya fue aprobado' }, { status: 400 })
+      const next = {
+        paymentStatus: paymentStatus ?? order.paymentStatus,
+        status: status ?? order.status,
+      }
+      if (next.paymentStatus === 'APPROVED' && next.status === 'CANCELLED' && paymentStatus === 'APPROVED') {
+        throw new HttpError(400, 'No se puede aprobar el pago de un pedido cancelado')
       }
 
-      // Descontar stock
-      for (const item of order.items) {
-        if (item.comboId) {
-          // Si es un combo, descontar stock de cada producto que lo compone
-          const combo = await prisma.combo.findUnique({
-            where: { id: item.comboId },
-            include: {
-              products: true,
-            },
+      const heldBefore = holdsStock(order)
+      const heldAfter = holdsStock(next)
+      const movements = stockMovements(order.items)
+
+      if (!heldBefore && heldAfter) {
+        for (const [variantId, qty] of movements) {
+          // Descuenta solo si alcanza el stock (evita stock negativo)
+          const res = await tx.productVariant.updateMany({
+            where: { id: variantId, stock: { gte: qty } },
+            data: { stock: { decrement: qty } },
           })
-
-          if (combo) {
-            for (const comboProduct of combo.products) {
-              await prisma.productVariant.update({
-                where: { id: comboProduct.variantId },
-                data: {
-                  stock: {
-                    decrement: comboProduct.quantity * item.quantity,
-                  },
-                },
-              })
-            }
+          if (res.count === 0) {
+            const v = await tx.productVariant.findUnique({
+              where: { id: variantId },
+              select: { stock: true, product: { select: { name: true } } },
+            })
+            throw new HttpError(
+              409,
+              `Stock insuficiente de "${v?.product.name ?? variantId}" (disponible: ${v?.stock ?? 0}, necesario: ${qty})`
+            )
           }
-        } else if (item.variantId) {
-          // Si es un producto individual, descontar stock de la variante
-          await prisma.productVariant.update({
-            where: { id: item.variantId },
-            data: {
-              stock: {
-                decrement: item.quantity,
-              },
-            },
+          touchedVariantIds.push(variantId)
+        }
+      } else if (heldBefore && !heldAfter) {
+        // Cancelado / reembolsado / rechazado: devolver el stock
+        for (const [variantId, qty] of movements) {
+          await tx.productVariant.updateMany({
+            where: { id: variantId },
+            data: { stock: { increment: qty } },
           })
         }
       }
-    }
 
-    // Actualizar la orden
-    const updatedOrder = await prisma.order.update({
-      where: { id },
-      data: {
-        paymentStatus: paymentStatus || undefined,
-        status: status || undefined,
-        updatedAt: new Date(),
-      },
-      include: {
-        items: {
-          include: {
-            variant: {
-              include: {
-                product: true,
+      const updatedOrder = await tx.order.update({
+        where: { id },
+        data: {
+          paymentStatus,
+          status,
+          trackingNumber,
+        },
+        include: {
+          items: {
+            include: {
+              variant: {
+                include: {
+                  product: true,
+                },
               },
             },
           },
         },
-      },
+      })
+
+      return { updatedOrder, previous: order }
     })
 
     console.log('✅ Orden actualizada:', updatedOrder.orderNumber)
-    console.log('📧 Verificando envío de email...')
-    console.log('   - paymentStatus recibido:', paymentStatus)
-    console.log('   - Email del cliente:', updatedOrder.customerEmail)
+
+    if (touchedVariantIds.length > 0) {
+      notifyLowStock(touchedVariantIds).catch(err => console.error('Error en alerta de stock bajo:', err))
+    }
 
     // Si el pago fue aprobado, enviar email de confirmación
     if (paymentStatus === 'APPROVED' && updatedOrder.customerEmail) {
-      console.log('📧 Iniciando envío de email de confirmación...')
       try {
-        const emailData = {
+        await sendOrderConfirmationEmail({
           to: updatedOrder.customerEmail,
           orderNumber: updatedOrder.orderNumber,
           customerName: updatedOrder.customerName,
@@ -168,30 +237,30 @@ export async function PATCH(
           subtotal: updatedOrder.subtotal.toNumber(),
           total: updatedOrder.total.toNumber(),
           notes: updatedOrder.notes,
-        }
-        console.log('📧 Datos del email:', JSON.stringify(emailData, null, 2))
-
-        await sendOrderConfirmationEmail(emailData)
-        console.log('✅ Email de confirmación enviado exitosamente a:', updatedOrder.customerEmail)
-      } catch (emailError: any) {
-        console.error('❌ Error al enviar email de confirmación:', emailError)
-        console.error('❌ Detalles del error:', emailError.message)
-        console.error('❌ Stack:', emailError.stack)
+        })
+      } catch (emailError) {
         // No fallar la actualización si el email falla
+        console.error('❌ Error al enviar email de confirmación:', emailError)
       }
-    } else {
-      console.log('⚠️ Email NO enviado. Razón:')
-      console.log('   - paymentStatus === "APPROVED"?', paymentStatus === 'APPROVED')
-      console.log('   - Tiene email?', !!updatedOrder.customerEmail)
+    }
+
+    // Avisar al cliente cuando el pedido sale (una sola vez)
+    if (status === 'SHIPPED' && previous.status !== 'SHIPPED' && updatedOrder.customerEmail) {
+      sendOrderShippedEmail({
+        to: updatedOrder.customerEmail,
+        customerName: updatedOrder.customerName,
+        orderNumber: updatedOrder.orderNumber,
+        trackingNumber: updatedOrder.trackingNumber,
+      }).catch(err => console.error('❌ Error al enviar email de envío:', err))
     }
 
     return NextResponse.json(updatedOrder)
-  } catch (error: any) {
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
     console.error('Error al actualizar orden:', error)
-    return NextResponse.json(
-      { error: 'Error al actualizar orden', details: error.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Error al actualizar orden' }, { status: 500 })
   }
 }
 
@@ -201,74 +270,39 @@ export async function DELETE(
 ) {
   // Verificar autenticación
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
   try {
     const { id } = await params
 
-    const order = await prisma.order.findUnique({
-      where: { id },
-      include: {
-        items: true,
-      },
-    })
+    const order = await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({ where: { id }, include: stockItemsInclude })
+      if (!order) throw new HttpError(404, 'Orden no encontrada')
 
-    if (!order) {
-      return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
-    }
-
-    // Si la orden está aprobada, devolver el stock antes de eliminar
-    if (order.paymentStatus === 'APPROVED') {
-      for (const item of order.items) {
-        if (item.comboId) {
-          // Si es un combo, devolver stock de cada producto que lo compone
-          const combo = await prisma.combo.findUnique({
-            where: { id: item.comboId },
-            include: {
-              products: true,
-            },
-          })
-
-          if (combo) {
-            for (const comboProduct of combo.products) {
-              await prisma.productVariant.update({
-                where: { id: comboProduct.variantId },
-                data: {
-                  stock: {
-                    increment: comboProduct.quantity * item.quantity,
-                  },
-                },
-              })
-            }
-          }
-        } else if (item.variantId) {
-          // Si es un producto individual, devolver stock de la variante
-          await prisma.productVariant.update({
-            where: { id: item.variantId },
-            data: {
-              stock: {
-                increment: item.quantity,
-              },
-            },
+      // Si el pedido tenía el stock descontado, devolverlo antes de eliminar
+      if (holdsStock(order)) {
+        for (const [variantId, qty] of stockMovements(order.items)) {
+          await tx.productVariant.updateMany({
+            where: { id: variantId },
+            data: { stock: { increment: qty } },
           })
         }
       }
-    }
 
-    // Eliminar la orden (los items se eliminan en cascada)
-    await prisma.order.delete({
-      where: { id },
+      // Eliminar la orden (los items se eliminan en cascada)
+      await tx.order.delete({ where: { id } })
+      return order
     })
 
     console.log('✅ Orden eliminada:', order.orderNumber)
     return NextResponse.json({ message: 'Orden eliminada exitosamente' })
-  } catch (error: any) {
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
     console.error('Error al eliminar orden:', error)
-    return NextResponse.json(
-      { error: 'Error al eliminar orden', details: error.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Error al eliminar orden' }, { status: 500 })
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
+import { isAdmin } from '@/lib/auth/require-admin'
 
 export async function GET(
   request: NextRequest,
@@ -53,14 +54,24 @@ export async function PUT(
 ) {
   // Verificar autenticación
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
   try {
     const { id } = await params
     const body = await request.json()
-    const { name, description, color } = body
+    const { name, description, color, section, imageFit } = body
+
+    const validSections = ['GROW', 'FERRETERIA', 'ACCESORIOS']
+    if (section && !validSections.includes(section)) {
+      return NextResponse.json({ error: 'Sección inválida' }, { status: 400 })
+    }
+
+    const validImageFits = ['COVER', 'CONTAIN']
+    if (imageFit && !validImageFits.includes(imageFit)) {
+      return NextResponse.json({ error: 'Ajuste de imagen inválido' }, { status: 400 })
+    }
 
     const category = await prisma.category.update({
       where: { id },
@@ -68,6 +79,8 @@ export async function PUT(
         name,
         description: description || null,
         color: color || null,
+        section: section || undefined,
+        imageFit: imageFit || undefined,
       },
     })
 
@@ -88,14 +101,24 @@ export async function PATCH(
 ) {
   // Verificar autenticación
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
   try {
     const { id } = await params
     const body = await request.json()
-    const { name, description, color } = body
+    const { name, description, color, section, imageFit } = body
+
+    const validSections = ['GROW', 'FERRETERIA', 'ACCESORIOS']
+    if (section && !validSections.includes(section)) {
+      return NextResponse.json({ error: 'Sección inválida' }, { status: 400 })
+    }
+
+    const validImageFits = ['COVER', 'CONTAIN']
+    if (imageFit && !validImageFits.includes(imageFit)) {
+      return NextResponse.json({ error: 'Ajuste de imagen inválido' }, { status: 400 })
+    }
 
     const category = await prisma.category.update({
       where: { id },
@@ -103,6 +126,8 @@ export async function PATCH(
         name: name || undefined,
         description: description !== undefined ? description : undefined,
         color: color !== undefined ? color : undefined,
+        section: section || undefined,
+        imageFit: imageFit || undefined,
       },
     })
 
@@ -123,7 +148,7 @@ export async function DELETE(
 ) {
   // Verificar autenticación
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 

@@ -10,35 +10,48 @@ export async function GET(request: Request) {
       return NextResponse.json([])
     }
 
-    const products = await prisma.product.findMany({
-      where: {
-        isActive: true,
-        OR: [
-          { name: { contains: query, mode: 'insensitive' } },
-          { brand: { contains: query, mode: 'insensitive' } },
-        ],
-      },
-      include: {
-        images: {
-          orderBy: { order: 'asc' },
-          take: 1,
+    const [products, combos] = await Promise.all([
+      prisma.product.findMany({
+        where: {
+          isActive: true,
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { brand: { contains: query, mode: 'insensitive' } },
+          ],
         },
-        variants: {
-          where: { isActive: true },
-          select: {
-            price: true,
+        include: {
+          images: {
+            orderBy: { order: 'asc' },
+            take: 1,
           },
-          take: 1,
+          variants: {
+            where: { isActive: true },
+            select: {
+              price: true,
+            },
+            take: 1,
+          },
         },
-      },
-      take: 6, // Máximo 6 resultados en el dropdown
-      orderBy: {
-        name: 'asc',
-      },
-    })
+        take: 6, // Máximo 6 resultados en el dropdown
+        orderBy: {
+          name: 'asc',
+        },
+      }),
+      prisma.combo.findMany({
+        where: {
+          isActive: true,
+          name: { contains: query, mode: 'insensitive' },
+        },
+        take: 4,
+        orderBy: {
+          name: 'asc',
+        },
+      }),
+    ])
 
-    const results = products.map((product) => ({
+    const productResults = products.map((product) => ({
       id: product.id,
+      type: 'product' as const,
       name: product.name,
       brand: product.brand,
       slug: product.slug,
@@ -48,7 +61,19 @@ export async function GET(request: Request) {
       image: product.images[0]?.url || null,
     }))
 
-    return NextResponse.json(results)
+    const comboResults = combos.map((combo) => ({
+      id: combo.id,
+      type: 'combo' as const,
+      name: combo.name,
+      brand: null,
+      slug: combo.slug,
+      price: combo.price,
+      isOnSale: false,
+      salePrice: null,
+      image: combo.image,
+    }))
+
+    return NextResponse.json([...productResults, ...comboResults])
   } catch (error: any) {
     console.error('Error en búsqueda:', error)
     return NextResponse.json(

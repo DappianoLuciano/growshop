@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
+import { isAdmin } from '@/lib/auth/require-admin'
 
 export async function GET(
   request: NextRequest,
@@ -8,7 +9,7 @@ export async function GET(
 ) {
   // Verificar autenticación
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
@@ -54,7 +55,7 @@ export async function PUT(
 ) {
   // Verificar autenticación
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
@@ -136,7 +137,7 @@ export async function DELETE(
 ) {
   // Verificar autenticación
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 

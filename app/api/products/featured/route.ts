@@ -24,7 +24,6 @@ export async function GET() {
       orderBy: {
         createdAt: 'desc',
       },
-      take: 8,
     })
 
     return NextResponse.json(products)

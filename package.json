@@ -2,16 +2,28 @@
   "name": "growshop-ecommerce",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main-standalone.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "check": "tsc --noEmit && next build",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "create-admin": "tsx scripts/create-admin.ts"
+    "create-admin": "tsx scripts/create-admin.ts",
+    "electron": "node_modules\\electron\\dist\\electron.exe .",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && node_modules\\electron\\dist\\electron.exe .\"",
+    "electron:build": "cross-env BUILD_STANDALONE=true next build && electron-builder",
+    "electron:build:win": "cross-env BUILD_STANDALONE=true next build && electron-builder --win",
+    "electron:build:mac": "cross-env BUILD_STANDALONE=true next build && electron-builder --mac",
+    "electron:build:linux": "cross-env BUILD_STANDALONE=true next build && electron-builder --linux",
+    "icon:generate": "node scripts/generate-icon.js",
+    "prepare:standalone": "node scripts/prepare-standalone.js",
+    "build:installer": "electron-builder --config electron-builder-standalone.json --win"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -45,12 +57,18 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^10.0.5",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
+    "electron": "^32.3.3",
+    "electron-builder": "^26.15.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
+    "png-to-ico": "^3.0.2",
     "prisma-zod-generator": "^3.0.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^9.1.0"
   }
 }

@@ -85,18 +85,32 @@ model ProductVariant {
 }
 
 model Category {
-  id          String    @id @default(cuid())
+  id          String          @id @default(cuid())
   name        String
-  slug        String    @unique
+  slug        String          @unique
   description String?
   image       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   color       String?
+  section     CategorySection @default(GROW)
+  imageFit    ImageFit        @default(COVER)
   products    Product[]
 
   @@index([slug])
+  @@index([section])
   @@map("categories")
+}
+
+enum ImageFit {
+  COVER
+  CONTAIN
+}
+
+enum CategorySection {
+  GROW
+  FERRETERIA
+  ACCESORIOS
 }
 
 model Combo {

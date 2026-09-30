@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
+import { isAdmin } from '@/lib/auth/require-admin'
 import { correoArgentinoService } from '@/lib/shipping/correo-argentino'
 
 /**
@@ -10,7 +11,7 @@ import { correoArgentinoService } from '@/lib/shipping/correo-argentino'
 export async function POST(request: NextRequest) {
   // Verificar autenticación - solo admin puede crear envíos
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 

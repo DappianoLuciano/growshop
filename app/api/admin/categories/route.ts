@@ -1,21 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
+import { isAdmin } from '@/lib/auth/require-admin'
 
 export async function POST(request: NextRequest) {
   // Verificar autenticación - solo admin puede crear
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
   try {
     const body = await request.json()
-    const { name, description, color } = body
+    const { name, description, color, section, imageFit } = body
 
     if (!name) {
       return NextResponse.json(
         { error: 'El nombre es requerido' },
+        { status: 400 }
+      )
+    }
+
+    const validSections = ['GROW', 'FERRETERIA', 'ACCESORIOS']
+    if (section && !validSections.includes(section)) {
+      return NextResponse.json(
+        { error: 'Sección inválida' },
+        { status: 400 }
+      )
+    }
+
+    const validImageFits = ['COVER', 'CONTAIN']
+    if (imageFit && !validImageFits.includes(imageFit)) {
+      return NextResponse.json(
+        { error: 'Ajuste de imagen inválido' },
         { status: 400 }
       )
     }
@@ -41,6 +58,8 @@ export async function POST(request: NextRequest) {
         slug,
         description: description || null,
         color: color || null,
+        section: section || 'GROW',
+        imageFit: imageFit || 'COVER',
       },
     })
 
@@ -55,9 +74,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const section = searchParams.get('section')
+
+    const validSections = ['GROW', 'FERRETERIA', 'ACCESORIOS']
+
     const categories = await prisma.category.findMany({
+      where: section && validSections.includes(section) ? { section: section as any } : undefined,
       include: {
         _count: {
           select: {

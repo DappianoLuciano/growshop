@@ -20,20 +20,27 @@ interface OrderConfirmationEmailProps {
   notes?: string | null
 }
 
+const esc = (value: unknown) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
 export function generateOrderConfirmationEmail(props: OrderConfirmationEmailProps): string {
-  const {
-    orderNumber,
-    customerName,
-    customerEmail,
-    customerPhone,
-    shippingType,
-    address,
-    city,
-    province,
-    items,
-    total,
-    notes,
-  } = props
+  // Todo lo que escribe el cliente se escapa antes de ir al HTML
+  const orderNumber = esc(props.orderNumber)
+  const customerName = esc(props.customerName)
+  const customerEmail = esc(props.customerEmail)
+  const customerPhone = esc(props.customerPhone)
+  const shippingType = props.shippingType
+  const address = esc(props.address)
+  const city = esc(props.city)
+  const province = esc(props.province)
+  const notes = props.notes ? esc(props.notes) : null
+  const total = props.total
+  const items = props.items.map(item => ({ ...item, productName: esc(item.productName) }))
 
   return `
 <!DOCTYPE html>

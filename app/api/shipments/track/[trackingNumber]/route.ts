@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { correoArgentinoService } from '@/lib/shipping/correo-argentino'
 import { auth } from '@/lib/auth/auth'
+import { isAdmin } from '@/lib/auth/require-admin'
 
 /**
  * GET /api/shipments/track/[trackingNumber]
@@ -12,7 +13,7 @@ export async function GET(
 ) {
   // Verificar autenticación
   const session = await auth()
-  if (!session) {
+  if (!isAdmin(session)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 

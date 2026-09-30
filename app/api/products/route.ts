@@ -6,11 +6,14 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const categoryId = searchParams.get('categoria')
     const searchQuery = searchParams.get('busqueda')
+    const section = searchParams.get('section')
+    const validSections = ['GROW', 'FERRETERIA', 'ACCESORIOS']
 
     const products = await prisma.product.findMany({
       where: {
         isActive: true,
         ...(categoryId && { categoryId }),
+        ...(section && validSections.includes(section) && { category: { section: section as any } }),
         ...(searchQuery && {
           OR: [
             { name: { contains: searchQuery, mode: 'insensitive' } },
@@ -38,6 +41,7 @@ export async function GET(request: Request) {
             id: true,
             name: true,
             slug: true,
+            imageFit: true,
           },
         },
       },
