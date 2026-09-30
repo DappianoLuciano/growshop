@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
+import { apiError } from '@/lib/api/errors'
 
 export async function GET() {
   try {
@@ -27,11 +28,7 @@ export async function GET() {
     })
 
     return NextResponse.json(products)
-  } catch (error: any) {
-    console.error('Error al obtener productos destacados:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener productos destacados', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al obtener productos destacados')
   }
 }

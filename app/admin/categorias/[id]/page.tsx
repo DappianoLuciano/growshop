@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react'
 import { ArrowLeft, Save, Loader2, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { errorMessage } from '@/lib/utils/error-message'
 
 export default function EditarCategoriaPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -63,13 +64,13 @@ export default function EditarCategoriaPage({ params }: { params: Promise<{ id: 
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.details || errorData.error || 'Error al guardar categoría')
+        throw new Error(errorData.error || 'Error al guardar categoría')
       }
 
       router.push('/admin/categorias')
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error:', err)
-      setError(err.message)
+      setError(errorMessage(err))
     } finally {
       setSaving(false)
     }
@@ -177,7 +178,7 @@ export default function EditarCategoriaPage({ params }: { params: Promise<{ id: 
                   <option value="CONTAIN">Ajustar completa (se ve la foto entera, sin recortar)</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
-                  Usá "Ajustar completa" para categorías con fotos que no son cuadradas (ej. lentes)
+                  Usá &quot;Ajustar completa&quot; para categorías con fotos que no son cuadradas (ej. lentes)
                 </p>
               </div>
 

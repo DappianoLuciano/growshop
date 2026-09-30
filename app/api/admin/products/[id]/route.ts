@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
+import { apiError } from '@/lib/api/errors'
 
 export async function GET(
   request: NextRequest,
@@ -30,12 +31,8 @@ export async function GET(
     }
 
     return NextResponse.json(product)
-  } catch (error: any) {
-    console.error('Error al obtener producto:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener producto', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al obtener producto')
   }
 }
 
@@ -97,12 +94,8 @@ export async function PUT(
 
     console.log('✅ Producto actualizado:', product)
     return NextResponse.json(product)
-  } catch (error: any) {
-    console.error('Error al actualizar producto:', error)
-    return NextResponse.json(
-      { error: 'Error al actualizar producto', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al actualizar producto')
   }
 }
 
@@ -162,11 +155,7 @@ export async function DELETE(
 
     console.log('✅ Producto eliminado:', id)
     return NextResponse.json({ success: true })
-  } catch (error: any) {
-    console.error('Error al eliminar producto:', error)
-    return NextResponse.json(
-      { error: 'Error al eliminar producto', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al eliminar producto')
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
+import { apiError } from '@/lib/api/errors'
 
 export async function GET(
   request: NextRequest,
@@ -39,11 +40,7 @@ export async function GET(
     }
 
     return NextResponse.json(combo)
-  } catch (error: any) {
-    console.error('Error al obtener combo:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener combo', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al obtener combo')
   }
 }

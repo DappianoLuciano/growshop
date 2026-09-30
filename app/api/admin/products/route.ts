@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
+import { apiError } from '@/lib/api/errors'
 
 export async function POST(request: NextRequest) {
   // Verificar autenticación
@@ -88,13 +89,8 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Producto creado:', product)
     return NextResponse.json(product, { status: 201 })
-  } catch (error: any) {
-    console.error('💥 Error al crear producto:', error)
-    console.error('Stack:', error.stack)
-    return NextResponse.json(
-      { error: 'Error al crear producto', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al crear producto')
   }
 }
 
@@ -118,11 +114,7 @@ export async function GET() {
     })
 
     return NextResponse.json(products)
-  } catch (error: any) {
-    console.error('Error al obtener productos:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener productos', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al obtener productos')
   }
 }

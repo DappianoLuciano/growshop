@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { correoArgentinoService } from '@/lib/shipping/correo-argentino'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
+import { apiError } from '@/lib/api/errors'
 
 /**
  * GET /api/shipments/track/[trackingNumber]
@@ -33,11 +34,7 @@ export async function GET(
       success: true,
       tracking: trackingData,
     })
-  } catch (error: any) {
-    console.error('Error al rastrear envío:', error)
-    return NextResponse.json(
-      { error: 'Error al rastrear envío', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al rastrear envío')
   }
 }

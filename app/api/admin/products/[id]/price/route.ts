@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
+import { apiError } from '@/lib/api/errors'
 
 export async function PATCH(
   request: NextRequest,
@@ -48,11 +49,7 @@ export async function PATCH(
     })
 
     return NextResponse.json(updatedProduct)
-  } catch (error: any) {
-    console.error('Error al actualizar precio:', error)
-    return NextResponse.json(
-      { error: 'Error al actualizar precio', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al actualizar precio')
   }
 }

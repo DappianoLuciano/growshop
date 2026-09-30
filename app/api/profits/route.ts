@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
+import { apiError } from '@/lib/api/errors'
+import { Prisma, ProfitType } from '@/lib/generated/prisma'
 
 /**
  * GET /api/profits
@@ -21,10 +23,10 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
 
-    const where: any = {}
+    const where: Prisma.ProfitWhereInput = {}
 
-    if (type) {
-      where.type = type
+    if (type && (Object.values(ProfitType) as string[]).includes(type)) {
+      where.type = type as ProfitType
     }
 
     if (orderId) {
@@ -32,12 +34,9 @@ export async function GET(request: NextRequest) {
     }
 
     if (startDate || endDate) {
-      where.createdAt = {}
-      if (startDate) {
-        where.createdAt.gte = new Date(startDate)
-      }
-      if (endDate) {
-        where.createdAt.lte = new Date(endDate)
+      where.createdAt = {
+        ...(startDate && { gte: new Date(startDate) }),
+        ...(endDate && { lte: new Date(endDate) }),
       }
     }
 
@@ -84,11 +83,7 @@ export async function GET(request: NextRequest) {
       totals,
       count: profits.length,
     })
-  } catch (error: any) {
-    console.error('Error al obtener ganancias:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener ganancias', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al obtener ganancias')
   }
 }

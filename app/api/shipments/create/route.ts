@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
 import { correoArgentinoService } from '@/lib/shipping/correo-argentino'
+import { apiError } from '@/lib/api/errors'
 
 /**
  * POST /api/shipments/create
@@ -172,11 +173,7 @@ export async function POST(request: NextRequest) {
         description: profit.description,
       },
     })
-  } catch (error: any) {
-    console.error('Error al crear envío:', error)
-    return NextResponse.json(
-      { error: 'Error al crear envío', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al crear envío')
   }
 }

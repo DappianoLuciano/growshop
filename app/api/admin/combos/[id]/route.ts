@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
+import { apiError } from '@/lib/api/errors'
 
 export async function GET(
   request: NextRequest,
@@ -40,12 +41,8 @@ export async function GET(
     }
 
     return NextResponse.json(combo)
-  } catch (error: any) {
-    console.error('Error al obtener combo:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener combo', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al obtener combo')
   }
 }
 
@@ -96,7 +93,7 @@ export async function PUT(
         ...(products && {
           products: {
             deleteMany: {},
-            create: products.map((p: any) => ({
+            create: products.map((p: { variantId: string; quantity: number }) => ({
               variantId: p.variantId,
               quantity: p.quantity,
             }))
@@ -122,12 +119,8 @@ export async function PUT(
 
     console.log('✅ Combo actualizado:', combo)
     return NextResponse.json(combo)
-  } catch (error: any) {
-    console.error('Error al actualizar combo:', error)
-    return NextResponse.json(
-      { error: 'Error al actualizar combo', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al actualizar combo')
   }
 }
 
@@ -150,11 +143,7 @@ export async function DELETE(
 
     console.log('✅ Combo eliminado:', id)
     return NextResponse.json({ success: true })
-  } catch (error: any) {
-    console.error('Error al eliminar combo:', error)
-    return NextResponse.json(
-      { error: 'Error al eliminar combo', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al eliminar combo')
   }
 }

@@ -5,6 +5,7 @@ import { ArrowLeft, Save, Upload, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import RichTextEditor from '@/components/RichTextEditor'
+import { errorMessage } from '@/lib/utils/error-message'
 
 interface Category {
   id: string
@@ -118,8 +119,8 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
 
         // Cargar imágenes existentes ordenadas
         const sortedImages = product.images
-          .sort((a: any, b: any) => a.order - b.order)
-          .map((img: any) => img.url)
+          .sort((a: { order: number }, b: { order: number }) => a.order - b.order)
+          .map((img: { url: string }) => img.url)
         setImages(sortedImages)
       }
     } catch (error) {
@@ -157,9 +158,9 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
 
       const uploadedUrls = await Promise.all(uploadPromises)
       setImages(prev => [...prev, ...uploadedUrls])
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error:', err)
-      setError('Error al subir imágenes: ' + err.message)
+      setError('Error al subir imágenes: ' + errorMessage(err))
     } finally {
       setUploading(false)
     }
@@ -203,13 +204,13 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.details || errorData.error || 'Error al guardar producto')
+        throw new Error(errorData.error || 'Error al guardar producto')
       }
 
       router.push('/admin/productos')
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error:', err)
-      setError(err.message)
+      setError(errorMessage(err))
     } finally {
       setSaving(false)
     }

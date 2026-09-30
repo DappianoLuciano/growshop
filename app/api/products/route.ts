@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
+import { apiError } from '@/lib/api/errors'
+import { CategorySection } from '@/lib/generated/prisma'
 
 export async function GET(request: Request) {
   try {
@@ -7,13 +9,13 @@ export async function GET(request: Request) {
     const categoryId = searchParams.get('categoria')
     const searchQuery = searchParams.get('busqueda')
     const section = searchParams.get('section')
-    const validSections = ['GROW', 'FERRETERIA', 'ACCESORIOS']
+    const validSections: string[] = Object.values(CategorySection)
 
     const products = await prisma.product.findMany({
       where: {
         isActive: true,
         ...(categoryId && { categoryId }),
-        ...(section && validSections.includes(section) && { category: { section: section as any } }),
+        ...(section && validSections.includes(section) && { category: { section: section as CategorySection } }),
         ...(searchQuery && {
           OR: [
             { name: { contains: searchQuery, mode: 'insensitive' } },
@@ -51,11 +53,7 @@ export async function GET(request: Request) {
     })
 
     return NextResponse.json(products)
-  } catch (error: any) {
-    console.error('Error al obtener productos:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener productos', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al obtener productos')
   }
 }

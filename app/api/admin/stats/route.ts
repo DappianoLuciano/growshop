@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
+import { apiError } from '@/lib/api/errors'
 
 export async function GET() {
   // Verificar autenticación - información sensible
@@ -43,11 +44,7 @@ export async function GET() {
       approvedOrders,
       totalSales: monthSales._sum.total || 0
     })
-  } catch (error: any) {
-    console.error('Error al obtener estadísticas:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener estadísticas', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al obtener estadísticas')
   }
 }

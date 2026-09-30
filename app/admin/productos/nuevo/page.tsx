@@ -5,6 +5,7 @@ import { ArrowLeft, Save, Upload, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import RichTextEditor from '@/components/RichTextEditor'
+import { errorMessage } from '@/lib/utils/error-message'
 
 interface Category {
   id: string
@@ -102,9 +103,9 @@ export default function NuevoProductoPage() {
 
       const uploadedUrls = await Promise.all(uploadPromises)
       setImages(prev => [...prev, ...uploadedUrls])
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error:', err)
-      setError('Error al subir imágenes: ' + err.message)
+      setError('Error al subir imágenes: ' + errorMessage(err))
     } finally {
       setUploading(false)
     }
@@ -157,11 +158,11 @@ export default function NuevoProductoPage() {
         console.error('Error del servidor:', errorData)
 
         // Mejorar mensaje de error para SKU duplicado
-        if (errorData.details?.includes('Unique constraint') && errorData.details?.includes('sku')) {
+        if (response.status === 409 && errorData.fields?.includes('sku')) {
           throw new Error('El SKU ya existe. Por favor usá uno diferente.')
         }
 
-        throw new Error(errorData.details || errorData.error || 'Error al guardar producto')
+        throw new Error(errorData.error || 'Error al guardar producto')
       }
 
       const product = await response.json()
@@ -169,9 +170,9 @@ export default function NuevoProductoPage() {
 
       // Redirigir a la lista de productos
       router.push('/admin/productos')
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error:', err)
-      setError(err.message)
+      setError(errorMessage(err))
     } finally {
       setLoading(false)
     }

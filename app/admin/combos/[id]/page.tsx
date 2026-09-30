@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import RichTextEditor from '@/components/RichTextEditor'
+import { errorMessage } from '@/lib/utils/error-message'
 
 interface ProductVariant {
   id: string
@@ -82,7 +83,7 @@ export default function EditarComboPage({ params }: { params: Promise<{ id: stri
         })
 
         // Cargar productos del combo
-        const comboProducts: SelectedProduct[] = combo.products.map((cp: any) => ({
+        const comboProducts: SelectedProduct[] = combo.products.map((cp: { variantId: string; quantity: number; variant: ProductVariant }) => ({
           variantId: cp.variantId,
           productName: cp.variant.product.name,
           brand: cp.variant.product.brand,
@@ -173,9 +174,9 @@ export default function EditarComboPage({ params }: { params: Promise<{ id: stri
 
       const data = await response.json()
       setFormData({ ...formData, image: data.url })
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error:', err)
-      setError('Error al subir imagen: ' + err.message)
+      setError('Error al subir imagen: ' + errorMessage(err))
     } finally {
       setUploading(false)
     }
@@ -212,13 +213,13 @@ export default function EditarComboPage({ params }: { params: Promise<{ id: stri
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.details || errorData.error || 'Error al actualizar combo')
+        throw new Error(errorData.error || 'Error al actualizar combo')
       }
 
       router.push('/admin/combos')
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error:', err)
-      setError(err.message)
+      setError(errorMessage(err))
     } finally {
       setSaving(false)
     }

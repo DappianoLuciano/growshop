@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
+import { apiError } from '@/lib/api/errors'
 
 export async function GET(
   request: NextRequest,
@@ -39,12 +40,8 @@ export async function GET(
     }
 
     return NextResponse.json(category)
-  } catch (error: any) {
-    console.error('Error al obtener categoría:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener categoría', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al obtener categoría')
   }
 }
 
@@ -86,12 +83,8 @@ export async function PUT(
 
     console.log('✅ Categoría actualizada:', category)
     return NextResponse.json(category)
-  } catch (error: any) {
-    console.error('Error al actualizar categoría:', error)
-    return NextResponse.json(
-      { error: 'Error al actualizar categoría', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al actualizar categoría')
   }
 }
 
@@ -133,12 +126,8 @@ export async function PATCH(
 
     console.log('✅ Categoría actualizada:', category)
     return NextResponse.json(category)
-  } catch (error: any) {
-    console.error('Error al actualizar categoría:', error)
-    return NextResponse.json(
-      { error: 'Error al actualizar categoría', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al actualizar categoría')
   }
 }
 
@@ -183,11 +172,7 @@ export async function DELETE(
 
     console.log('✅ Categoría eliminada:', category.name)
     return NextResponse.json({ message: 'Categoría eliminada exitosamente' })
-  } catch (error: any) {
-    console.error('Error al eliminar categoría:', error)
-    return NextResponse.json(
-      { error: 'Error al eliminar categoría', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al eliminar categoría')
   }
 }

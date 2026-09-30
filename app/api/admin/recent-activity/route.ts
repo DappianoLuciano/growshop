@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
+import { apiError } from '@/lib/api/errors'
 
 export async function GET() {
   try {
@@ -78,11 +79,7 @@ export async function GET() {
       lowStockProducts,
       todaySales: Math.floor(todaySales),
     })
-  } catch (error: any) {
-    console.error('Error al obtener actividad reciente:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener actividad reciente', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al obtener actividad reciente')
   }
 }

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
+import { apiError } from '@/lib/api/errors'
+import { CategorySection } from '@/lib/generated/prisma'
 
 export async function POST(request: NextRequest) {
   // Verificar autenticación - solo admin puede crear
@@ -65,12 +67,8 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Categoría creada:', category)
     return NextResponse.json(category, { status: 201 })
-  } catch (error: any) {
-    console.error('Error al crear categoría:', error)
-    return NextResponse.json(
-      { error: 'Error al crear categoría', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al crear categoría')
   }
 }
 
@@ -79,10 +77,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const section = searchParams.get('section')
 
-    const validSections = ['GROW', 'FERRETERIA', 'ACCESORIOS']
+    const validSections: string[] = Object.values(CategorySection)
 
     const categories = await prisma.category.findMany({
-      where: section && validSections.includes(section) ? { section: section as any } : undefined,
+      where: section && validSections.includes(section) ? { section: section as CategorySection } : undefined,
       include: {
         _count: {
           select: {
@@ -96,11 +94,7 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(categories)
-  } catch (error: any) {
-    console.error('Error al obtener categorías:', error)
-    return NextResponse.json(
-      { error: 'Error al obtener categorías', details: error.message },
-      { status: 500 }
-    )
+  } catch (error) {
+    return apiError(error, 'Error al obtener categorías')
   }
 }
