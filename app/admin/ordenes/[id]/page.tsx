@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, use } from 'react'
-import { ArrowLeft, Check, Loader2, Trash2, Truck, Package } from 'lucide-react'
+import { ArrowLeft, Check, Loader2, Trash2, Truck, Package, Ban, RotateCcw } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -20,6 +20,8 @@ export default function OrdenDetailPage({ params }: { params: Promise<{ id: stri
   const [trackingModalOpen, setTrackingModalOpen] = useState(false)
   const [manualTracking, setManualTracking] = useState('')
   const [savingTracking, setSavingTracking] = useState(false)
+  const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [reopenModalOpen, setReopenModalOpen] = useState(false)
 
   useEffect(() => { fetchOrder() }, [])
 
@@ -34,21 +36,33 @@ export default function OrdenDetailPage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  const handleApprovePayment = async () => {
+  // PATCH de la orden; muestra el error del servidor si falla (ej: falta de stock)
+  const updateOrder = async (changes: Record<string, string>) => {
     try {
       const response = await fetch(`/api/orders/${resolvedParams.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentStatus: 'APPROVED' }),
+        body: JSON.stringify(changes),
       })
       if (response.ok) {
         fetchOrder()
-        setSuccessModalOpen(true)
+        return true
       }
+      const data = await response.json().catch(() => ({}))
+      alert(data.error || 'No se pudo actualizar la orden')
     } catch (error) {
-      console.error('Error al aprobar pago:', error)
+      console.error('Error al actualizar orden:', error)
+      alert('No se pudo actualizar la orden')
     }
+    return false
   }
+
+  const handleApprovePayment = async () => {
+    if (await updateOrder({ paymentStatus: 'APPROVED' })) setSuccessModalOpen(true)
+  }
+
+  const isCancelled = order?.status === 'CANCELLED'
+  const canCancel = order && !['CANCELLED', 'DELIVERED'].includes(order.status)
 
   const handleDeleteOrder = async () => {
     try {
@@ -143,7 +157,8 @@ Ingresá el número de seguimiento en la web para ver el estado de tu envío.
 
         setManualTracking('')
       } else {
-        alert('Error al guardar tracking')
+        const data = await response.json().catch(() => ({}))
+        alert(data.error || 'Error al guardar tracking')
       }
     } catch (error) {
       console.error('Error:', error)
@@ -161,16 +176,21 @@ Ingresá el número de seguimiento en la web para ver el estado de tu envío.
       <div className="flex items-center gap-4 mb-8">
         <Link href="/admin/ordenes" className="p-2 text-gray-400 hover:text-white"><ArrowLeft className="w-6 h-6" /></Link>
         <div className="flex-1">
-          <h1 className="text-3xl font-black text-white mb-2">Orden {order.orderNumber}</h1>
+          <h1 className="text-3xl font-black text-white mb-2 flex items-center gap-3 flex-wrap">
+            Orden {order.orderNumber}
+            {isCancelled && (
+              <span className="px-3 py-1 rounded-full text-sm font-semibold bg-red-500/20 text-red-400">CANCELADA</span>
+            )}
+          </h1>
           <p className="text-gray-400">{new Date(order.createdAt).toLocaleString('es-AR')}</p>
         </div>
         <div className="flex items-center gap-3">
-          {order.paymentStatus === 'PENDING' && (
+          {order.paymentStatus === 'PENDING' && !isCancelled && (
             <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:scale-105 transition-all">
               <Check className="w-5 h-5" />Aprobar Pago
             </button>
           )}
-          {order.paymentStatus === 'APPROVED' && order.shippingType === 'SHIPPING' && !order.trackingNumber && (
+          {order.paymentStatus === 'APPROVED' && !isCancelled && order.shippingType === 'SHIPPING' && !order.trackingNumber && (
             <>
               <button
                 onClick={handleGenerateShipment}
@@ -191,6 +211,16 @@ Ingresá el número de seguimiento en la web para ver el estado de tu envío.
                 Ingresar Tracking
               </button>
             </>
+          )}
+          {canCancel && (
+            <button onClick={() => setCancelModalOpen(true)} className="flex items-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-red-500/50 text-red-400 font-bold rounded-xl hover:scale-105 transition-all">
+              <Ban className="w-5 h-5" />Cancelar Pedido
+            </button>
+          )}
+          {isCancelled && (
+            <button onClick={() => setReopenModalOpen(true)} className="flex items-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-gray-200 font-bold rounded-xl hover:scale-105 transition-all">
+              <RotateCcw className="w-5 h-5" />Reabrir
+            </button>
           )}
           <button onClick={() => setDeleteModalOpen(true)} className="flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl hover:scale-105 transition-all">
             <Trash2 className="w-5 h-5" />Eliminar
@@ -322,7 +352,7 @@ Ingresá el número de seguimiento en la web para ver el estado de tu envío.
         onClose={() => setModalOpen(false)}
         onConfirm={handleApprovePayment}
         title="Confirmar Pago"
-        message="¿Confirmar que el pago fue recibido? Esta acción descontará el stock de los productos y no se puede revertir."
+        message="¿Confirmar que el pago fue recibido? Esta acción descontará el stock de los productos. Si después cancelás el pedido, el stock se devuelve."
         confirmText="Aprobar Pago"
         cancelText="Cancelar"
         type="success"
@@ -337,6 +367,32 @@ Ingresá el número de seguimiento en la web para ver el estado de tu envío.
         confirmText="Entendido"
         cancelText=""
         type="success"
+      />
+
+      <ConfirmModal
+        isOpen={cancelModalOpen}
+        onClose={() => setCancelModalOpen(false)}
+        onConfirm={() => updateOrder({ status: 'CANCELLED' })}
+        title="Cancelar Pedido"
+        message={order.paymentStatus === 'APPROVED'
+          ? '¿Cancelar este pedido? El pago estaba aprobado: el stock de los productos se va a devolver. Acordate de devolverle el dinero al cliente.'
+          : '¿Cancelar este pedido? Queda registrado como cancelado y se puede reabrir más tarde.'}
+        confirmText="Cancelar Pedido"
+        cancelText="Volver"
+        type="danger"
+      />
+
+      <ConfirmModal
+        isOpen={reopenModalOpen}
+        onClose={() => setReopenModalOpen(false)}
+        onConfirm={() => updateOrder({ status: 'PENDING' })}
+        title="Reabrir Pedido"
+        message={order.paymentStatus === 'APPROVED'
+          ? '¿Reabrir este pedido? Como el pago está aprobado, se va a volver a descontar el stock.'
+          : '¿Reabrir este pedido? Vuelve a quedar pendiente.'}
+        confirmText="Reabrir"
+        cancelText="Volver"
+        type="warning"
       />
 
       <ConfirmModal

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { Package, Check, Loader2, Trash2 } from 'lucide-react'
@@ -73,6 +73,9 @@ export default function OrdenesAdminPage() {
       if (response.ok) {
         fetchOrders()
         setSuccessModalOpen(true)
+      } else {
+        const data = await response.json().catch(() => ({}))
+        alert(data.error || 'No se pudo aprobar el pago')
       }
     } catch (error) {
       console.error('Error al aprobar pago:', error)
@@ -98,7 +101,7 @@ export default function OrdenesAdminPage() {
 
   const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true
-    if (filter === 'pending') return order.paymentStatus === 'PENDING'
+    if (filter === 'pending') return order.paymentStatus === 'PENDING' && order.status !== 'CANCELLED'
     if (filter === 'approved') return order.paymentStatus === 'APPROVED'
     return true
   })
@@ -108,6 +111,7 @@ export default function OrdenesAdminPage() {
       PENDING: 'bg-yellow-500/20 text-yellow-400',
       APPROVED: 'bg-green-500/20 text-green-400',
       REJECTED: 'bg-red-500/20 text-red-400',
+      CANCELLED: 'bg-red-500/20 text-red-400',
     }
     return colors[status] || 'bg-gray-500/20 text-gray-400'
   }
@@ -201,8 +205,8 @@ export default function OrdenesAdminPage() {
                       )}
                     </td>
                     <td className="px-6 py-5" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(order.paymentStatus)}`}>
-                        {order.paymentStatus}
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(order.status === 'CANCELLED' ? 'CANCELLED' : order.paymentStatus)}`}>
+                        {order.status === 'CANCELLED' ? 'CANCELADA' : order.paymentStatus}
                       </span>
                     </td>
                     <td className="px-6 py-5" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
@@ -210,7 +214,7 @@ export default function OrdenesAdminPage() {
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center justify-end gap-2">
-                        {order.paymentStatus === 'PENDING' && (
+                        {order.paymentStatus === 'PENDING' && order.status !== 'CANCELLED' && (
                           <button onClick={(e) => { e.stopPropagation(); openApproveModal(order.id); }} className="p-2 text-gray-400 hover:text-green-500">
                             <Check className="w-4 h-4" />
                           </button>
@@ -242,8 +246,8 @@ export default function OrdenesAdminPage() {
                   <p className="font-mono text-sm text-white font-bold mb-1">{order.orderNumber}</p>
                   <p className="text-xs text-gray-400">{order.items?.length || 0} items · {new Date(order.createdAt).toLocaleDateString('es-AR')}</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(order.paymentStatus)}`}>
-                  {order.paymentStatus}
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(order.status === 'CANCELLED' ? 'CANCELLED' : order.paymentStatus)}`}>
+                  {order.status === 'CANCELLED' ? 'CANCELADA' : order.paymentStatus}
                 </span>
               </div>
 
@@ -283,7 +287,7 @@ export default function OrdenesAdminPage() {
                 >
                   Ver Detalle
                 </Link>
-                {order.paymentStatus === 'PENDING' && (
+                {order.paymentStatus === 'PENDING' && order.status !== 'CANCELLED' && (
                   <button
                     onClick={() => openApproveModal(order.id)}
                     className="px-4 py-2 bg-gray-800 hover:bg-green-500/20 text-gray-400 hover:text-green-500 rounded-lg transition-all"
