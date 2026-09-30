@@ -5,6 +5,19 @@ import { useCart } from '@/contexts/CartContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Loader2, Check } from 'lucide-react'
+import type { RateResponse } from '@/lib/shipping/correo-argentino'
+
+// precio: lo que paga el cliente (con markup); precioReal: costo del correo
+type ShippingRate = NonNullable<RateResponse['rates']>[number] & { precioReal: number }
+
+// Respuesta de POST /api/orders
+interface CreatedOrder {
+  orderNumber: string
+  items: { productName: string; quantity: number; price: number; subtotal: number }[]
+  subtotal: number
+  shippingCost: number
+  total: number
+}
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -12,8 +25,8 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [checkoutComplete, setCheckoutComplete] = useState(false)
   const [calculatingShipping, setCalculatingShipping] = useState(false)
-  const [shippingRates, setShippingRates] = useState<any[]>([])
-  const [selectedShipping, setSelectedShipping] = useState<any>(null)
+  const [shippingRates, setShippingRates] = useState<ShippingRate[]>([])
+  const [selectedShipping, setSelectedShipping] = useState<ShippingRate | null>(null)
   const [formData, setFormData] = useState({
     customerName: '',
     customerEmail: '',
@@ -55,7 +68,7 @@ export default function CheckoutPage() {
         const data = await response.json()
         if (data.success && data.rates) {
           // APLICAR MARKUP DEL 100% (DOBLE) AL PRECIO QUE VE EL CLIENTE
-          const ratesWithMarkup = data.rates.map((rate: any) => ({
+          const ratesWithMarkup = (data.rates as NonNullable<RateResponse['rates']>).map((rate): ShippingRate => ({
             ...rate,
             precioReal: rate.precio, // Guardar precio real (costo del correo)
             precio: rate.precio * 2, // Precio con 100% markup (lo que paga el cliente)
@@ -136,10 +149,10 @@ export default function CheckoutPage() {
     }
   }
 
-  const generateWhatsAppMessage = (order: any) => {
+  const generateWhatsAppMessage = (order: CreatedOrder) => {
     let msg = `🛒 NUEVO PEDIDO - ${order.orderNumber}\n\n`
     msg += `👤 Cliente: ${formData.customerName}\n📧 ${formData.customerEmail}\n📱 ${formData.customerPhone}\n\n📦 Productos:\n`
-    order.items.forEach((item: any, i: number) => {
+    order.items.forEach((item, i) => {
       msg += `${i + 1}. ${item.productName} x${item.quantity} - $${item.subtotal.toLocaleString('es-AR')}\n`
     })
     msg += `\n💰 Subtotal: $${order.subtotal.toLocaleString('es-AR')}\n`
@@ -247,7 +260,7 @@ export default function CheckoutPage() {
                     <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
                       <h3 className="text-sm font-bold text-white mb-3">Opciones de Envío</h3>
                       <div className="space-y-2">
-                        {shippingRates.map((rate: any, index: number) => (
+                        {shippingRates.map((rate, index) => (
                           <label
                             key={index}
                             className={`flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer transition-all ${

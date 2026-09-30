@@ -6,17 +6,53 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import ConfirmModal from '@/components/admin/ConfirmModal'
 
+// Los Decimal de Prisma llegan como string en el JSON; se usan con parseFloat/toString
+interface OrderItem {
+  id: string
+  productName: string
+  quantity: number
+  price: number
+  variant?: { product?: { images?: { url: string }[] } } | null
+}
+
+interface OrderDetail {
+  id: string
+  orderNumber: string
+  createdAt: string
+  status: string
+  paymentStatus: string
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+  shippingType: string
+  address: string | null
+  city: string | null
+  province: string | null
+  postalCode: string | null
+  subtotal: number
+  shippingCost: number
+  total: number
+  trackingNumber: string | null
+  ocaTrackingData?: { estimatedDelivery?: string } | null
+  items: OrderItem[]
+}
+
+interface ShipmentResult {
+  shipment?: { trackingNumber?: string; cost?: number; label?: string; estimatedDelivery?: string }
+  profit?: { amount?: number }
+}
+
 export default function OrdenDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const router = useRouter()
-  const [order, setOrder] = useState<any>(null)
+  const [order, setOrder] = useState<OrderDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [successModalOpen, setSuccessModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [shipmentModalOpen, setShipmentModalOpen] = useState(false)
   const [generatingShipment, setGeneratingShipment] = useState(false)
-  const [shipmentData, setShipmentData] = useState<any>(null)
+  const [shipmentData, setShipmentData] = useState<ShipmentResult | null>(null)
   const [trackingModalOpen, setTrackingModalOpen] = useState(false)
   const [manualTracking, setManualTracking] = useState('')
   const [savingTracking, setSavingTracking] = useState(false)
@@ -115,6 +151,7 @@ export default function OrdenDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   const handleSaveManualTracking = async () => {
+    if (!order) return
     if (!manualTracking.trim()) {
       alert('Ingresa un número de tracking')
       return
@@ -232,7 +269,7 @@ Ingresá el número de seguimiento en la web para ver el estado de tu envío.
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
             <h2 className="text-xl font-bold text-white mb-4">Productos</h2>
             <div className="space-y-4">
-              {order.items?.map((item: any) => (
+              {order.items?.map((item) => (
                 <div key={item.id} className="flex gap-4 pb-4 border-b border-gray-800">
                   <div className="relative w-20 h-20 bg-gray-800 rounded-lg overflow-hidden">
                     {item.variant?.product?.images?.[0] ? (

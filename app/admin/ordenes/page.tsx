@@ -17,9 +17,8 @@ interface Order {
   shippingType: string
   trackingNumber?: string
   shippingCost?: number
-  ocaTrackingData?: any
   createdAt: string
-  items: any[]
+  items: { id: string }[]
 }
 
 export default function OrdenesAdminPage() {
@@ -107,7 +106,7 @@ export default function OrdenesAdminPage() {
   })
 
   const getStatusBadge = (status: string) => {
-    const colors: any = {
+    const colors: Record<string, string> = {
       PENDING: 'bg-yellow-500/20 text-yellow-400',
       APPROVED: 'bg-green-500/20 text-green-400',
       REJECTED: 'bg-red-500/20 text-red-400',

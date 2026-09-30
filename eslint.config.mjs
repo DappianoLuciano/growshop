@@ -12,7 +12,26 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Código generado y builds de la app de escritorio
+    "lib/generated/**",
+    "dist/**",
+    "dist-installer/**",
+    "resources-standalone/**",
   ]),
+  // Reglas pensadas para el React Compiler (el proyecto no lo usa). Marcan como error
+  // el patrón clásico de cargar datos con fetch dentro de useEffect, que funciona bien.
+  // Quedan como advertencia hasta migrar esa carga de datos (ej: a Server Components).
+  {
+    rules: {
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/immutability": "warn",
+    },
+  },
+  // Scripts de Node (CommonJS): usan require()
+  {
+    files: ["electron/**/*.js", "scripts/**/*.js"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;

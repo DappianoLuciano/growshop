@@ -1,3 +1,5 @@
+import { errorMessage } from '@/lib/utils/error-message'
+
 /**
  * Servicio de integración con Correo Argentino
  * Documentación: https://developers.correoargentino.com.ar/
@@ -191,11 +193,11 @@ class CorreoArgentinoService {
         success: true,
         rates: data.servicios || [],
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al obtener tarifas:', error)
       return {
         success: false,
-        error: error.message || 'Error al obtener tarifas',
+        error: errorMessage(error, 'Error al obtener tarifas'),
       }
     }
   }
@@ -263,11 +265,11 @@ class CorreoArgentinoService {
         cost: data.costo,
         estimatedDelivery: data.fechaEntregaEstimada,
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al crear envío:', error)
       return {
         success: false,
-        error: error.message || 'Error al crear envío',
+        error: errorMessage(error, 'Error al crear envío'),
       }
     }
   }
@@ -275,7 +277,7 @@ class CorreoArgentinoService {
   /**
    * Rastrear un envío
    */
-  async trackShipment(trackingNumber: string): Promise<any> {
+  async trackShipment(trackingNumber: string): Promise<unknown> {
     try {
       const token = await this.authenticate()
 

@@ -88,27 +88,27 @@ export default function DashboardPage() {
       <div className="md:hidden bg-gray-900 border border-gray-800 rounded-xl p-6 mb-8">
         <h2 className="text-xl font-bold text-white mb-4">Acciones Rápidas</h2>
         <div className="grid grid-cols-1 gap-4">
-          <a
-            href="/admin/productos"
+          <Link
+            href="/admin/productos/nuevo"
             className="flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl active:scale-95 transition-all"
           >
             <Package className="w-5 h-5" />
             Nuevo Producto
-          </a>
-          <a
-            href="/admin/categorias"
+          </Link>
+          <Link
+            href="/admin/categorias/nueva"
             className="flex items-center justify-center gap-2 px-6 py-4 bg-gray-800 text-white font-bold rounded-xl active:scale-95 transition-all"
           >
             <FolderTree className="w-5 h-5" />
             Nueva Categoría
-          </a>
-          <a
+          </Link>
+          <Link
             href="/admin/ordenes"
             className="flex items-center justify-center gap-2 px-6 py-4 bg-gray-800 text-white font-bold rounded-xl active:scale-95 transition-all"
           >
             <ShoppingCart className="w-5 h-5" />
             Ver Órdenes
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -148,27 +148,27 @@ export default function DashboardPage() {
       <div className="hidden md:block bg-gray-900 border border-gray-800 rounded-xl p-6 mb-8">
         <h2 className="text-xl font-bold text-white mb-4">Acciones Rápidas</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a
-            href="/admin/productos?nuevo=true"
+          <Link
+            href="/admin/productos/nuevo"
             className="flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:scale-105 transition-all"
           >
             <Package className="w-5 h-5" />
             Nuevo Producto
-          </a>
-          <a
-            href="/admin/categorias?nuevo=true"
+          </Link>
+          <Link
+            href="/admin/categorias/nueva"
             className="flex items-center justify-center gap-2 px-6 py-4 bg-gray-800 text-white font-bold rounded-xl hover:bg-gray-700 transition-all"
           >
             <FolderTree className="w-5 h-5" />
             Nueva Categoría
-          </a>
-          <a
+          </Link>
+          <Link
             href="/admin/ordenes"
             className="flex items-center justify-center gap-2 px-6 py-4 bg-gray-800 text-white font-bold rounded-xl hover:bg-gray-700 transition-all"
           >
             <ShoppingCart className="w-5 h-5" />
             Ver Órdenes
-          </a>
+          </Link>
         </div>
       </div>
 

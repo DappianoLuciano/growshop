@@ -40,7 +40,7 @@ export default function ProductImageCarousel({
         : indexOrUpdater
       onIndexChange(newIndex)
     } else {
-      setInternalIndex(indexOrUpdater as any)
+      setInternalIndex(indexOrUpdater)
     }
   }
 

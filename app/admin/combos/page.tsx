@@ -35,10 +35,6 @@ export default function CombosAdminPage() {
   const [combos, setCombos] = useState<Combo[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchCombos()
-  }, [])
-
   const fetchCombos = async () => {
     try {
       const response = await fetch('/api/admin/combos')
@@ -53,6 +49,10 @@ export default function CombosAdminPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchCombos()
+  }, [])
 
   const filteredCombos = combos.filter(combo =>
     combo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
