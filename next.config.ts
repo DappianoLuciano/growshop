@@ -1,5 +1,25 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV !== 'production';
+
+// Política de contenido: solo recursos propios + imágenes de Cloudinary/Unsplash.
+// 'unsafe-inline' en scripts es necesario para los scripts de arranque de Next.js
+// (sin nonces); 'unsafe-eval' solo en desarrollo (recarga en caliente).
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com",
+  "font-src 'self' data:",
+  `connect-src 'self'${isDev ? ' ws: wss:' : ''}`,
+  "frame-src 'none'",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "object-src 'none'",
+  ...(isDev ? [] : ['upgrade-insecure-requests']),
+].join('; ');
+
 const nextConfig: NextConfig = {
   // Output standalone para Electron
   output: process.env.BUILD_STANDALONE ? 'standalone' : undefined,
@@ -13,7 +33,6 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // Configurar dominios de imágenes
   // Encabezados de seguridad para todas las rutas
   async headers() {
     return [
@@ -21,7 +40,7 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: [
           { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'Content-Security-Policy', value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'" },
+          { key: 'Content-Security-Policy', value: contentSecurityPolicy },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=()' },
@@ -31,6 +50,7 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Dominios permitidos para next/image
   images: {
     remotePatterns: [
       {
