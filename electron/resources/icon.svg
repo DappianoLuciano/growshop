@@ -1,0 +1,33 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo -->
+  <rect width="512" height="512" fill="#10b981"/>
+
+  <!-- Hoja superior izquierda -->
+  <path d="M 150 180 Q 120 150 140 120 Q 160 140 180 150 Q 165 165 150 180 Z" fill="#059669" opacity="0.8"/>
+
+  <!-- Hoja superior derecha -->
+  <path d="M 362 180 Q 392 150 372 120 Q 352 140 332 150 Q 347 165 362 180 Z" fill="#059669" opacity="0.8"/>
+
+  <!-- Hoja central -->
+  <path d="M 256 140 Q 230 110 240 80 Q 256 100 272 80 Q 282 110 256 140 Z" fill="#34d399"/>
+
+  <!-- Maceta -->
+  <path d="M 200 320 L 220 450 L 292 450 L 312 320 Z" fill="#78350f"/>
+
+  <!-- Borde maceta -->
+  <rect x="190" y="310" width="132" height="20" rx="5" fill="#92400e"/>
+
+  <!-- Tierra -->
+  <ellipse cx="256" cy="320" rx="66" ry="15" fill="#451a03"/>
+
+  <!-- Tallo -->
+  <rect x="246" y="180" width="20" height="145" rx="3" fill="#15803d"/>
+
+  <!-- Hojas del tallo -->
+  <ellipse cx="220" cy="240" rx="30" ry="15" fill="#22c55e" transform="rotate(-30 220 240)"/>
+  <ellipse cx="292" cy="260" rx="30" ry="15" fill="#22c55e" transform="rotate(30 292 260)"/>
+  <ellipse cx="210" cy="290" rx="25" ry="12" fill="#16a34a" transform="rotate(-25 210 290)"/>
+
+  <!-- Texto G -->
+  <text x="256" y="400" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="#fef3c7" text-anchor="middle">G</text>
+</svg>

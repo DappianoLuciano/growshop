@@ -1,0 +1,59 @@
+{
+  "appId": "com.agrogrow.admin",
+  "productName": "AgroGrow Admin",
+  "copyright": "Copyright © 2026 AgroGrow",
+  "publish": null,
+  "directories": {
+    "output": "dist",
+    "buildResources": "electron/resources"
+  },
+  "files": [
+    "electron/**/*",
+    {
+      "from": ".next/standalone",
+      "to": "app/.next/standalone"
+    },
+    {
+      "from": ".next/static",
+      "to": "app/.next/static"
+    },
+    {
+      "from": "public",
+      "to": "app/public"
+    },
+    "package.json"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "electron/resources/icon.ico",
+    "artifactName": "${productName}-${version}-${arch}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "AgroGrow Admin",
+    "installerIcon": "electron/resources/icon.ico",
+    "uninstallerIcon": "electron/resources/icon.ico"
+  },
+  "mac": {
+    "target": ["dmg", "zip"],
+    "icon": "electron/resources/icon.icns",
+    "category": "public.app-category.business"
+  },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "icon": "electron/resources/icon.png",
+    "category": "Office"
+  }
+}
