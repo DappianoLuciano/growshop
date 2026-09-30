@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Package, Check, Loader2, Trash2 } from 'lucide-react'
+import { Package, Check, Loader2, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import ConfirmModal from '@/components/admin/ConfirmModal'
 
@@ -15,38 +15,80 @@ interface Order {
   status: string
   paymentStatus: string
   shippingType: string
-  trackingNumber?: string
-  shippingCost?: number
+  trackingNumber?: string | null
   createdAt: string
-  items: { id: string }[]
+  _count: { items: number }
 }
+
+interface OrdersPage {
+  orders: Order[]
+  total: number
+  page: number
+  totalPages: number
+}
+
+const FILTERS = [
+  { value: 'all', label: 'Todas', active: 'bg-green-500 text-white' },
+  { value: 'pending', label: 'Pendientes', active: 'bg-yellow-500 text-white' },
+  { value: 'approved', label: 'Aprobadas', active: 'bg-green-500 text-white' },
+  { value: 'cancelled', label: 'Canceladas', active: 'bg-red-500 text-white' },
+]
 
 export default function OrdenesAdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
+  const [search, setSearch] = useState('')
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [successModalOpen, setSuccessModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false)
 
-  useEffect(() => {
-    fetchOrders()
-  }, [])
-
   const fetchOrders = async () => {
     try {
-      const response = await fetch('/api/orders')
+      const params = new URLSearchParams({ page: String(page), filter })
+      if (query) params.set('q', query)
+      const response = await fetch(`/api/orders?${params}`)
       if (response.ok) {
-        const data = await response.json()
-        setOrders(data)
+        const data: OrdersPage = await response.json()
+        // Si se borró el último pedido de la página, volver a la anterior
+        if (data.orders.length === 0 && data.page > 1) {
+          setPage(data.totalPages)
+          return
+        }
+        setOrders(data.orders)
+        setTotal(data.total)
+        setTotalPages(data.totalPages)
       }
     } catch (error) {
       console.error('Error:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  useEffect(() => {
+    fetchOrders()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, filter, query])
+
+  // Búsqueda: espera a que se deje de escribir
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setQuery(search.trim())
+      setPage(1)
+    }, 350)
+    return () => clearTimeout(t)
+  }, [search])
+
+  const changeFilter = (value: string) => {
+    setFilter(value)
+    setPage(1)
   }
 
   const openApproveModal = (orderId: string) => {
@@ -98,13 +140,6 @@ export default function OrdenesAdminPage() {
     }
   }
 
-  const filteredOrders = orders.filter(order => {
-    if (filter === 'all') return true
-    if (filter === 'pending') return order.paymentStatus === 'PENDING' && order.status !== 'CANCELLED'
-    if (filter === 'approved') return order.paymentStatus === 'APPROVED'
-    return true
-  })
-
   const getStatusBadge = (status: string) => {
     const colors: Record<string, string> = {
       PENDING: 'bg-yellow-500/20 text-yellow-400',
@@ -134,21 +169,33 @@ export default function OrdenesAdminPage() {
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-gray-900 border border-gray-800 rounded-xl">
           <Package className="w-5 h-5 text-green-500" />
-          <span className="text-white font-bold">{orders.length}</span>
+          <span className="text-white font-bold">{total}</span>
           <span className="text-gray-400 text-sm">órdenes</span>
         </div>
       </div>
 
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 sticky top-16 z-20 bg-black pt-2 -mt-2">
-        <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap ${filter === 'all' ? 'bg-green-500 text-white' : 'bg-gray-800 text-gray-300'}`}>
-          Todas
-        </button>
-        <button onClick={() => setFilter('pending')} className={`px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap ${filter === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-800 text-gray-300'}`}>
-          Pendientes
-        </button>
-        <button onClick={() => setFilter('approved')} className={`px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap ${filter === 'approved' ? 'bg-green-500 text-white' : 'bg-gray-800 text-gray-300'}`}>
-          Aprobadas
-        </button>
+      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-6 sticky top-16 z-20 bg-black pt-2 -mt-2 pb-2">
+        <div className="flex gap-2 overflow-x-auto">
+          {FILTERS.map(f => (
+            <button
+              key={f.value}
+              onClick={() => changeFilter(f.value)}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap ${filter === f.value ? f.active : 'bg-gray-800 text-gray-300'}`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <div className="relative md:ml-auto md:w-80">
+          <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="search"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar por orden, cliente, email o teléfono"
+            className="w-full pl-9 pr-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-white text-sm focus:outline-none focus:border-green-500"
+          />
+        </div>
       </div>
 
       {/* Desktop Table */}
@@ -168,16 +215,16 @@ export default function OrdenesAdminPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.length === 0 ? (
+              {orders.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center text-gray-400">No hay órdenes</td>
                 </tr>
               ) : (
-                filteredOrders.map((order) => (
+                orders.map((order) => (
                   <tr key={order.id} className="border-t border-gray-800 hover:bg-gray-800/50 cursor-pointer transition-colors">
                     <td className="px-6 py-5" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <p className="font-mono text-sm text-white">{order.orderNumber}</p>
-                      <p className="text-xs text-gray-400">{order.items?.length || 0} items</p>
+                      <p className="text-xs text-gray-400">{order._count.items} items</p>
                     </td>
                     <td className="px-6 py-5" onClick={() => window.location.href = `/admin/ordenes/${order.id}`}>
                       <p className="text-white font-semibold">{order.customerName}</p>
@@ -233,17 +280,17 @@ export default function OrdenesAdminPage() {
 
       {/* Mobile Cards */}
       <div className="lg:hidden space-y-4 max-h-[calc(100vh-220px)] overflow-y-auto custom-scrollbar">
-        {filteredOrders.length === 0 ? (
+        {orders.length === 0 ? (
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center text-gray-400">
             No hay órdenes
           </div>
         ) : (
-          filteredOrders.map((order) => (
+          orders.map((order) => (
             <div key={order.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-green-500/50 transition-all">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="font-mono text-sm text-white font-bold mb-1">{order.orderNumber}</p>
-                  <p className="text-xs text-gray-400">{order.items?.length || 0} items · {new Date(order.createdAt).toLocaleDateString('es-AR')}</p>
+                  <p className="text-xs text-gray-400">{order._count.items} items · {new Date(order.createdAt).toLocaleDateString('es-AR')}</p>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(order.status === 'CANCELLED' ? 'CANCELLED' : order.paymentStatus)}`}>
                   {order.status === 'CANCELLED' ? 'CANCELADA' : order.paymentStatus}
@@ -307,6 +354,30 @@ export default function OrdenesAdminPage() {
           ))
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="p-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label="Página anterior"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <span className="text-sm text-gray-400">
+            Página <span className="text-white font-semibold">{page}</span> de {totalPages}
+          </span>
+          <button
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="p-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label="Página siguiente"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+      )}
 
       <ConfirmModal
         isOpen={modalOpen}

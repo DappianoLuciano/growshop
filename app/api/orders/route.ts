@@ -7,6 +7,8 @@ import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { getVariantUnitPrice, SHIPPING_MARKUP } from '@/lib/orders/pricing'
 import { correoArgentinoService } from '@/lib/shipping/correo-argentino'
 import { randomBytes } from 'crypto'
+import { Prisma } from '@/lib/generated/prisma'
+import { apiError } from '@/lib/api/errors'
 
 const itemSchema = z
   .object({
@@ -235,32 +237,71 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+const ORDERS_PAGE_SIZE = 25
+
+// Filtros del listado del panel
+const ORDER_FILTERS: Record<string, Prisma.OrderWhereInput> = {
+  all: {},
+  pending: { paymentStatus: 'PENDING', status: { not: 'CANCELLED' } },
+  approved: { paymentStatus: 'APPROVED', status: { not: 'CANCELLED' } },
+  cancelled: { status: 'CANCELLED' },
+}
+
+// GET /api/orders?page=1&filter=pending&q=texto  (solo admin)
+export async function GET(request: NextRequest) {
   const { error } = await requireAdminApi()
   if (error) return error
 
-  try {
-    const orders = await prisma.order.findMany({
-      include: {
-        items: {
-          include: {
-            variant: {
-              include: {
-                product: true,
-              },
-            },
-            combo: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+  const { searchParams } = new URL(request.url)
+  const page = Math.max(1, Number.parseInt(searchParams.get('page') || '1', 10) || 1)
+  const filter = ORDER_FILTERS[searchParams.get('filter') || 'all'] ?? ORDER_FILTERS.all
+  const q = (searchParams.get('q') || '').trim().slice(0, 100)
 
-    return NextResponse.json(orders)
+  const where: Prisma.OrderWhereInput = {
+    ...filter,
+    ...(q && {
+      OR: [
+        { orderNumber: { contains: q, mode: 'insensitive' } },
+        { customerName: { contains: q, mode: 'insensitive' } },
+        { customerEmail: { contains: q, mode: 'insensitive' } },
+        { customerPhone: { contains: q } },
+      ],
+    }),
+  }
+
+  try {
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        select: {
+          id: true,
+          orderNumber: true,
+          customerName: true,
+          customerEmail: true,
+          customerPhone: true,
+          total: true,
+          status: true,
+          paymentStatus: true,
+          shippingType: true,
+          trackingNumber: true,
+          createdAt: true,
+          _count: { select: { items: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * ORDERS_PAGE_SIZE,
+        take: ORDERS_PAGE_SIZE,
+      }),
+      prisma.order.count({ where }),
+    ])
+
+    return NextResponse.json({
+      orders,
+      total,
+      page,
+      pageSize: ORDERS_PAGE_SIZE,
+      totalPages: Math.max(1, Math.ceil(total / ORDERS_PAGE_SIZE)),
+    })
   } catch (error) {
-    console.error('Error al obtener órdenes:', error)
-    return NextResponse.json({ error: 'Error al obtener órdenes' }, { status: 500 })
+    return apiError(error, 'Error al obtener órdenes')
   }
 }
