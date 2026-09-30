@@ -6,21 +6,14 @@ import { sendOrderShippedEmail } from '@/lib/email/send-order-shipped'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
 import { notifyLowStock } from '@/lib/telegram'
-
-const PAYMENT_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'REFUNDED'] as const
-const ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'SHIPPED', 'DELIVERED', 'CANCELLED'] as const
-type OrderStatus = (typeof ORDER_STATUSES)[number]
-
-// Desde qué estados se puede pasar a cuáles (el resto se rechaza)
-const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  PENDING: ['CONFIRMED', 'PREPARING', 'READY', 'SHIPPED', 'CANCELLED'],
-  CONFIRMED: ['PENDING', 'PREPARING', 'READY', 'SHIPPED', 'CANCELLED'],
-  PREPARING: ['CONFIRMED', 'READY', 'SHIPPED', 'CANCELLED'],
-  READY: ['PREPARING', 'SHIPPED', 'DELIVERED', 'CANCELLED'],
-  SHIPPED: ['DELIVERED', 'CANCELLED'],
-  DELIVERED: [],
-  CANCELLED: ['PENDING'],
-}
+import {
+  PAYMENT_STATUSES,
+  ORDER_STATUSES,
+  canTransition,
+  holdsStock,
+  stockMovements,
+  stockChange,
+} from '@/lib/orders/stock'
 
 const patchSchema = z.object({
   paymentStatus: z.enum(PAYMENT_STATUSES).optional(),
@@ -32,33 +25,6 @@ class HttpError extends Error {
   constructor(public status: number, message: string) {
     super(message)
   }
-}
-
-type StockItem = {
-  quantity: number
-  variantId: string | null
-  combo: { products: Array<{ variantId: string; quantity: number }> } | null
-}
-
-// El stock está descontado mientras el pago esté aprobado y el pedido no esté cancelado
-function holdsStock(order: { paymentStatus: string; status: string }) {
-  return order.paymentStatus === 'APPROVED' && order.status !== 'CANCELLED'
-}
-
-// Unidades por variante que ocupa un pedido (incluye las de los combos)
-function stockMovements(items: StockItem[]) {
-  const movements = new Map<string, number>()
-  const add = (variantId: string, qty: number) =>
-    movements.set(variantId, (movements.get(variantId) || 0) + qty)
-
-  for (const item of items) {
-    if (item.combo) {
-      for (const cp of item.combo.products) add(cp.variantId, cp.quantity * item.quantity)
-    } else if (item.variantId) {
-      add(item.variantId, item.quantity)
-    }
-  }
-  return movements
 }
 
 const stockItemsInclude = { items: { include: { combo: { include: { products: true } } } } } as const
@@ -141,7 +107,7 @@ export async function PATCH(
       if (paymentStatus === 'APPROVED' && order.paymentStatus === 'APPROVED') {
         throw new HttpError(400, 'El pago ya fue aprobado')
       }
-      if (status && status !== order.status && !ALLOWED_TRANSITIONS[order.status].includes(status)) {
+      if (status && !canTransition(order.status, status)) {
         throw new HttpError(400, `No se puede pasar un pedido de ${order.status} a ${status}`)
       }
 
@@ -153,11 +119,10 @@ export async function PATCH(
         throw new HttpError(400, 'No se puede aprobar el pago de un pedido cancelado')
       }
 
-      const heldBefore = holdsStock(order)
-      const heldAfter = holdsStock(next)
+      const change = stockChange(order, next)
       const movements = stockMovements(order.items)
 
-      if (!heldBefore && heldAfter) {
+      if (change === 'decrement') {
         for (const [variantId, qty] of movements) {
           // Descuenta solo si alcanza el stock (evita stock negativo)
           const res = await tx.productVariant.updateMany({
@@ -176,7 +141,7 @@ export async function PATCH(
           }
           touchedVariantIds.push(variantId)
         }
-      } else if (heldBefore && !heldAfter) {
+      } else if (change === 'increment') {
         // Cancelado / reembolsado / rechazado: devolver el stock
         for (const [variantId, qty] of movements) {
           await tx.productVariant.updateMany({
