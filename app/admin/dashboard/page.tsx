@@ -1,6 +1,6 @@
 'use client'
 
-import { Package, ShoppingCart, FolderTree, DollarSign, Loader2, AlertTriangle, Clock, CheckCircle } from 'lucide-react'
+import { Package, ShoppingCart, FolderTree, DollarSign, Loader2, AlertTriangle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
@@ -37,37 +37,34 @@ export default function DashboardPage() {
   const [todaySales, setTodaySales] = useState(0)
 
   useEffect(() => {
+    async function fetchStats() {
+      try {
+        const response = await fetch('/api/admin/stats')
+        if (response.ok) setStats(await response.json())
+      } catch (error) {
+        console.error('Error al cargar estadísticas:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    async function fetchRecentActivity() {
+      try {
+        const response = await fetch('/api/admin/recent-activity')
+        if (response.ok) {
+          const data = await response.json()
+          setRecentOrders(data.recentOrders || [])
+          setLowStockProducts(data.lowStockProducts || [])
+          setTodaySales(data.todaySales || 0)
+        }
+      } catch (error) {
+        console.error('Error al cargar actividad reciente:', error)
+      }
+    }
+
     fetchStats()
     fetchRecentActivity()
   }, [])
-
-  const fetchStats = async () => {
-    try {
-      const response = await fetch('/api/admin/stats')
-      if (response.ok) {
-        const data = await response.json()
-        setStats(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar estadísticas:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchRecentActivity = async () => {
-    try {
-      const response = await fetch('/api/admin/recent-activity')
-      if (response.ok) {
-        const data = await response.json()
-        setRecentOrders(data.recentOrders || [])
-        setLowStockProducts(data.lowStockProducts || [])
-        setTodaySales(data.todaySales || 0)
-      }
-    } catch (error) {
-      console.error('Error al cargar actividad reciente:', error)
-    }
-  }
 
   const statsConfig = [
     { label: 'Total Productos', value: stats?.totalProducts || 0, icon: Package, color: 'from-blue-500 to-blue-600' },

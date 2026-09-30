@@ -59,18 +59,25 @@ export default function OrdenDetailPage({ params }: { params: Promise<{ id: stri
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [reopenModalOpen, setReopenModalOpen] = useState(false)
 
-  useEffect(() => { fetchOrder() }, [])
+  // Subir reloadKey vuelve a pedir la orden (después de aprobar, cancelar, etc.)
+  const [reloadKey, setReloadKey] = useState(0)
+  const fetchOrder = () => setReloadKey(k => k + 1)
 
-  const fetchOrder = async () => {
-    try {
-      const response = await fetch(`/api/orders/${resolvedParams.id}`)
-      if (response.ok) setOrder(await response.json())
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    let cancelled = false
+    async function loadOrder() {
+      try {
+        const response = await fetch(`/api/orders/${resolvedParams.id}`)
+        if (response.ok && !cancelled) setOrder(await response.json())
+      } catch (error) {
+        console.error(error)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
-  }
+    loadOrder()
+    return () => { cancelled = true }
+  }, [resolvedParams.id, reloadKey])
 
   // PATCH de la orden; muestra el error del servidor si falla (ej: falta de stock)
   const updateOrder = async (changes: Record<string, string>) => {

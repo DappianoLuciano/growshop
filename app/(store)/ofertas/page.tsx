@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Loader2, ShoppingCart, Sparkles } from 'lucide-react'
+import { Search, Loader2, ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 import ProductImageCarousel from '@/components/store/ProductImageCarousel'
 import { useCart } from '@/contexts/CartContext'
@@ -42,48 +42,47 @@ export default function OfertasPage() {
   const productsPerPage = 8
 
   useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch('/api/admin/categories')
+        if (response.ok) setCategories(await response.json())
+      } catch (error) {
+        console.error('Error al cargar categorías:', error)
+      }
+    }
     fetchCategories()
-    fetchOffers()
   }, [])
 
-  useEffect(() => {
-    fetchOffers()
-    setCurrentPage(1) // Reset a página 1 cuando cambia categoría
-  }, [selectedCategory])
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch('/api/admin/categories')
-      if (response.ok) {
-        const data = await response.json()
-        setCategories(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar categorías:', error)
-    }
-  }
-
-  const fetchOffers = async () => {
+  // Al cambiar de categoría: volver a la página 1 y mostrar la carga
+  const [prevCategory, setPrevCategory] = useState(selectedCategory)
+  if (selectedCategory !== prevCategory) {
+    setPrevCategory(selectedCategory)
+    setCurrentPage(1)
     setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (selectedCategory) params.append('categoria', selectedCategory)
-
-      const url = params.toString()
-        ? `/api/products/offers?${params.toString()}`
-        : '/api/products/offers'
-
-      const response = await fetch(url)
-      if (response.ok) {
-        const data = await response.json()
-        setProducts(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar ofertas:', error)
-    } finally {
-      setLoading(false)
-    }
   }
+
+  useEffect(() => {
+    let cancelled = false
+    async function fetchOffers() {
+      try {
+        const params = new URLSearchParams()
+        if (selectedCategory) params.append('categoria', selectedCategory)
+
+        const url = params.toString()
+          ? `/api/products/offers?${params.toString()}`
+          : '/api/products/offers'
+
+        const response = await fetch(url)
+        if (response.ok && !cancelled) setProducts(await response.json())
+      } catch (error) {
+        console.error('Error al cargar ofertas:', error)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    fetchOffers()
+    return () => { cancelled = true }
+  }, [selectedCategory])
 
   const getProductPrice = (product: Product) => {
     return product.salePrice || product.price

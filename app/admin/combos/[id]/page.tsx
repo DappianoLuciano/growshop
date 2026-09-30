@@ -63,55 +63,53 @@ export default function EditarComboPage({ params }: { params: Promise<{ id: stri
   const [error, setError] = useState('')
 
   useEffect(() => {
+    async function fetchCombo() {
+      try {
+        const response = await fetch(`/api/admin/combos/${resolvedParams.id}`)
+        if (response.ok) {
+          const combo = await response.json()
+
+          setFormData({
+            name: combo.name || '',
+            description: combo.description || '',
+            price: parseFloat(combo.price) || 0,
+            image: combo.image || '',
+            isActive: combo.isActive,
+            isFeatured: combo.isFeatured || false,
+          })
+
+          // Cargar productos del combo
+          const comboProducts: SelectedProduct[] = combo.products.map((cp: { variantId: string; quantity: number; variant: ProductVariant }) => ({
+            variantId: cp.variantId,
+            productName: cp.variant.product.name,
+            brand: cp.variant.product.brand,
+            quantity: cp.quantity,
+            sku: cp.variant.sku,
+            image: cp.variant.product.images[0]?.url || null,
+          }))
+          setSelectedProducts(comboProducts)
+        }
+      } catch (error) {
+        console.error('Error al cargar combo:', error)
+        setError('Error al cargar el combo')
+      } finally {
+        setLoading(false)
+      }
+    }
+    async function fetchProducts() {
+      try {
+        const response = await fetch('/api/admin/products')
+        if (response.ok) {
+          const data = await response.json()
+          setProducts(data.filter((p: Product) => p.isActive))
+        }
+      } catch (error) {
+        console.error('Error al cargar productos:', error)
+      }
+    }
     fetchCombo()
     fetchProducts()
-  }, [])
-
-  const fetchCombo = async () => {
-    try {
-      const response = await fetch(`/api/admin/combos/${resolvedParams.id}`)
-      if (response.ok) {
-        const combo = await response.json()
-
-        setFormData({
-          name: combo.name || '',
-          description: combo.description || '',
-          price: parseFloat(combo.price) || 0,
-          image: combo.image || '',
-          isActive: combo.isActive,
-          isFeatured: combo.isFeatured || false,
-        })
-
-        // Cargar productos del combo
-        const comboProducts: SelectedProduct[] = combo.products.map((cp: { variantId: string; quantity: number; variant: ProductVariant }) => ({
-          variantId: cp.variantId,
-          productName: cp.variant.product.name,
-          brand: cp.variant.product.brand,
-          quantity: cp.quantity,
-          sku: cp.variant.sku,
-          image: cp.variant.product.images[0]?.url || null,
-        }))
-        setSelectedProducts(comboProducts)
-      }
-    } catch (error) {
-      console.error('Error al cargar combo:', error)
-      setError('Error al cargar el combo')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch('/api/admin/products')
-      if (response.ok) {
-        const data = await response.json()
-        setProducts(data.filter((p: Product) => p.isActive))
-      }
-    } catch (error) {
-      console.error('Error al cargar productos:', error)
-    }
-  }
+  }, [resolvedParams.id])
 
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

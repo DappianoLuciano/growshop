@@ -15,14 +15,6 @@ const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
 // credenciales (.env) ni un servidor propio.
 const REMOTE_URL = process.env.AGROGROW_URL || 'https://agrogrowarg.com'
 
-// Rutas para producción
-function getResourcePath(relativePath) {
-  if (isDev) {
-    return path.join(__dirname, '..', relativePath)
-  }
-  return path.join(process.resourcesPath, relativePath)
-}
-
 // Función para verificar si el servidor está listo
 function waitForServer(port, maxAttempts = 90) {
   return new Promise((resolve, reject) => {
@@ -46,7 +38,7 @@ function waitForServer(port, maxAttempts = 90) {
       hosts.forEach((host) => {
         const url = `http://${host}:${port}`
 
-        http.get(url, (res) => {
+        http.get(url, () => {
           if (!responded) {
             responded = true
             console.log(`✅ Servidor respondió en ${url}!`)
@@ -188,10 +180,7 @@ function startNextServer() {
         reject(err)
       })
 
-      let serverExited = false
-
       nextServer.on('exit', (code, signal) => {
-        serverExited = true
         console.error(`[PROCESS EXIT]: code=${code}, signal=${signal}`)
         // NO rechazar aquí - el servidor puede estar corriendo
       })

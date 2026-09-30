@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { CartProvider } from "@/lib/store/cart-context";
 import { SITE_URL } from "@/lib/site";
 
 // Usar fuente del sistema para builds standalone (Electron)
@@ -39,9 +38,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${spaceGrotesk.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col" style={{ fontFamily: 'var(--font-space-grotesk), system-ui, -apple-system, sans-serif' }}>
-        <CartProvider>
-          {children}
-        </CartProvider>
+        {children}
       </body>
     </html>
   );

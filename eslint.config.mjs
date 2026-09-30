@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     "dist/**",
     "dist-installer/**",
     "resources-standalone/**",
+    // Script de Google Apps Script (sus funciones las llama Google, no el código)
+    "docs/google-apps-script.js",
   ]),
   // Reglas pensadas para el React Compiler (el proyecto no lo usa). Marcan como error
   // el patrón clásico de cargar datos con fetch dentro de useEffect, que funciona bien.

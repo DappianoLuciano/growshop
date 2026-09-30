@@ -43,56 +43,59 @@ function AccesoriosContent() {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam)
-  const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState<string>('default')
   const [currentPage, setCurrentPage] = useState(1)
   const productsPerPage = 8
 
   useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch('/api/admin/categories?section=ACCESORIOS')
+        if (response.ok) {
+          const data = await response.json()
+          setCategories(data)
+        }
+      } catch (error) {
+        console.error('Error al cargar categorías:', error)
+      }
+    }
     fetchCategories()
   }, [])
 
-  useEffect(() => {
-    if (categoryParam) {
-      setSelectedCategory(categoryParam)
-    }
-  }, [categoryParam])
+  // Si cambia la categoría de la URL, seleccionarla
+  const [prevCategoryParam, setPrevCategoryParam] = useState(categoryParam)
+  if (categoryParam !== prevCategoryParam) {
+    setPrevCategoryParam(categoryParam)
+    if (categoryParam) setSelectedCategory(categoryParam)
+  }
 
-  useEffect(() => {
-    fetchProducts()
+  // Al cambiar de categoría: volver a la página 1 y mostrar la carga
+  const [prevCategory, setPrevCategory] = useState(selectedCategory)
+  if (selectedCategory !== prevCategory) {
+    setPrevCategory(selectedCategory)
     setCurrentPage(1)
-  }, [selectedCategory])
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch('/api/admin/categories?section=ACCESORIOS')
-      if (response.ok) {
-        const data = await response.json()
-        setCategories(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar categorías:', error)
-    }
-  }
-
-  const fetchProducts = async () => {
     setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      params.append('section', 'ACCESORIOS')
-      if (selectedCategory) params.append('categoria', selectedCategory)
-
-      const response = await fetch(`/api/products?${params.toString()}`)
-      if (response.ok) {
-        const data = await response.json()
-        setProducts(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar productos:', error)
-    } finally {
-      setLoading(false)
-    }
   }
+
+  useEffect(() => {
+    let cancelled = false
+    async function fetchProducts() {
+      try {
+        const params = new URLSearchParams()
+        params.append('section', 'ACCESORIOS')
+        if (selectedCategory) params.append('categoria', selectedCategory)
+
+        const response = await fetch(`/api/products?${params.toString()}`)
+        if (response.ok && !cancelled) setProducts(await response.json())
+      } catch (error) {
+        console.error('Error al cargar productos:', error)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    fetchProducts()
+    return () => { cancelled = true }
+  }, [selectedCategory])
 
   const getProductPrice = (product: Product) => {
     if (product.isOnSale && product.salePrice) {
@@ -241,7 +244,7 @@ function AccesoriosContent() {
 
             <div className="flex flex-col md:flex-row gap-6">
               {/* Sidebar */}
-              <aside className={`md:w-64 ${showFilters ? 'block' : 'hidden md:block'}`}>
+              <aside className="md:w-64 hidden md:block">
                 <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 md:p-6 backdrop-blur-sm">
                   <h2 className="text-lg font-bold text-white mb-4">Categorías</h2>
                   <ul className="space-y-2 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-800">

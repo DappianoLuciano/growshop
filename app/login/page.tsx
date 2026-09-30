@@ -33,7 +33,7 @@ export default function LoginPage() {
         router.push('/admin/dashboard')
         router.refresh()
       }
-    } catch (error) {
+    } catch {
       setError('Error al iniciar sesión')
     } finally {
       setLoading(false)

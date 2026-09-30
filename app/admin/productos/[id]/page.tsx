@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import { ArrowLeft, Save, Upload, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import RichTextEditor from '@/components/RichTextEditor'
 import { errorMessage } from '@/lib/utils/error-message'
@@ -66,68 +67,65 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
   const categoryFields = selectedCategory ? getCategoryFields(selectedCategory.slug) : []
 
   useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const response = await fetch(`/api/admin/products/${resolvedParams.id}`)
+        if (response.ok) {
+          const product = await response.json()
+          const variant = product.variants[0]
+
+          setFormData({
+            name: product.name || '',
+            description: product.description || '',
+            price: parseFloat(product.price) || 0,
+            isOnSale: product.isOnSale || false,
+            salePrice: parseFloat(product.salePrice) || 0,
+            stock: variant?.stock || 0,
+            marca: product.brand || '',
+            sku: variant?.sku || '',
+            categoryId: product.categoryId || '',
+            isActive: product.isActive,
+            isFeatured: product.isFeatured || false,
+            capacity: variant?.capacity || '',
+            size: variant?.size || '',
+            power: variant?.power || '',
+          })
+
+          // Cargar imágenes existentes ordenadas
+          const sortedImages = product.images
+            .sort((a: { order: number }, b: { order: number }) => a.order - b.order)
+            .map((img: { url: string }) => img.url)
+          setImages(sortedImages)
+        }
+      } catch (error) {
+        console.error('Error al cargar producto:', error)
+        setError('Error al cargar el producto')
+      } finally {
+        setLoading(false)
+      }
+    }
+    async function fetchCategories() {
+      try {
+        const response = await fetch('/api/admin/categories')
+        if (response.ok) {
+          const data = await response.json()
+          setCategories(data)
+        }
+      } catch (error) {
+        console.error('Error al cargar categorías:', error)
+      }
+    }
     fetchProduct()
     fetchCategories()
-  }, [])
+  }, [resolvedParams.id])
 
   // Una vez que tenemos categorías y el producto, inicializamos la sección según su categoría actual
-  useEffect(() => {
-    if (!sectionInitialized && categories.length > 0 && formData.categoryId) {
-      const current = categories.find(c => c.id === formData.categoryId)
-      if (current) {
-        setSection(current.section)
-        setSectionInitialized(true)
-      }
-    }
-  }, [categories, formData.categoryId, sectionInitialized])
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch('/api/admin/categories')
-      if (response.ok) {
-        const data = await response.json()
-        setCategories(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar categorías:', error)
-    }
-  }
-
-  const fetchProduct = async () => {
-    try {
-      const response = await fetch(`/api/admin/products/${resolvedParams.id}`)
-      if (response.ok) {
-        const product = await response.json()
-        const variant = product.variants[0]
-
-        setFormData({
-          name: product.name || '',
-          description: product.description || '',
-          price: parseFloat(product.price) || 0,
-          isOnSale: product.isOnSale || false,
-          salePrice: parseFloat(product.salePrice) || 0,
-          stock: variant?.stock || 0,
-          marca: product.brand || '',
-          sku: variant?.sku || '',
-          categoryId: product.categoryId || '',
-          isActive: product.isActive,
-          isFeatured: product.isFeatured || false,
-          capacity: variant?.capacity || '',
-          size: variant?.size || '',
-          power: variant?.power || '',
-        })
-
-        // Cargar imágenes existentes ordenadas
-        const sortedImages = product.images
-          .sort((a: { order: number }, b: { order: number }) => a.order - b.order)
-          .map((img: { url: string }) => img.url)
-        setImages(sortedImages)
-      }
-    } catch (error) {
-      console.error('Error al cargar producto:', error)
-      setError('Error al cargar el producto')
-    } finally {
-      setLoading(false)
+  // (se ajusta durante el render; sectionInitialized evita repetirlo)
+  if (!sectionInitialized && categories.length > 0 && formData.categoryId) {
+    const current = categories.find(c => c.id === formData.categoryId)
+    if (current) {
+      setSection(current.section)
+      setSectionInitialized(true)
     }
   }
 
@@ -452,7 +450,7 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
                   <div className="grid grid-cols-2 gap-2">
                     {images.map((url, index) => (
                       <div key={index} className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden group">
-                        <img src={url} alt={`Imagen ${index + 1}`} className="w-full h-full object-cover" />
+                        <Image src={url} alt={`Imagen ${index + 1}`} fill sizes="200px" className="object-cover" />
                         <button
                           type="button"
                           onClick={() => removeImage(index)}

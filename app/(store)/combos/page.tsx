@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2, Package, Check, ShoppingCart } from 'lucide-react'
+import { Loader2, Package, ShoppingCart } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/contexts/CartContext'
@@ -37,23 +37,22 @@ export default function CombosPage() {
   const { addItem } = useCart()
 
   useEffect(() => {
+    async function fetchCombos() {
+      setLoading(true)
+      try {
+        const response = await fetch('/api/combos')
+        if (response.ok) {
+          const data = await response.json()
+          setCombos(data)
+        }
+      } catch (error) {
+        console.error('Error al cargar combos:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
     fetchCombos()
   }, [])
-
-  const fetchCombos = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch('/api/combos')
-      if (response.ok) {
-        const data = await response.json()
-        setCombos(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar combos:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const formatPrice = (price: number | string) => {
     const numPrice = Math.floor(parseFloat(price.toString()))

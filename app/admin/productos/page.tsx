@@ -40,23 +40,22 @@ export default function ProductosAdminPage() {
   const [updatingPrice, setUpdatingPrice] = useState(false)
 
   useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const response = await fetch('/api/admin/products')
+        if (response.ok) {
+          const data = await response.json()
+          console.log('📦 Productos recibidos:', data)
+          setProducts(data)
+        }
+      } catch (error) {
+        console.error('Error al cargar productos:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
     fetchProducts()
   }, [])
-
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch('/api/admin/products')
-      if (response.ok) {
-        const data = await response.json()
-        console.log('📦 Productos recibidos:', data)
-        setProducts(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar productos:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

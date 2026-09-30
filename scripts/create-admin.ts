@@ -17,8 +17,16 @@ const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
-  const email = 'admin@agrogrow.com'
-  const password = 'admin123'
+  // Uso: npm run create-admin -- <email> <password>
+  const [email, password] = process.argv.slice(2)
+  if (!email || !password) {
+    console.error('Uso: npm run create-admin -- <email> <password>')
+    process.exit(1)
+  }
+  if (password.length < 12) {
+    console.error('❌ La contraseña debe tener al menos 12 caracteres')
+    process.exit(1)
+  }
   const hashedPassword = await hash(password, 10)
 
   try {
@@ -31,7 +39,7 @@ async function main() {
       return
     }
 
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
@@ -40,9 +48,7 @@ async function main() {
       },
     })
 
-    console.log('✅ Usuario admin creado exitosamente')
-    console.log('📧 Email:', email)
-    console.log('🔑 Contraseña:', password)
+    console.log('✅ Usuario admin creado exitosamente:', email)
   } catch (error) {
     console.error('❌ Error al crear usuario admin:', error)
   } finally {

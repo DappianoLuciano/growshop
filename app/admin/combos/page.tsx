@@ -35,23 +35,20 @@ export default function CombosAdminPage() {
   const [combos, setCombos] = useState<Combo[]>([])
   const [loading, setLoading] = useState(true)
 
-  const fetchCombos = async () => {
-    try {
-      const response = await fetch('/api/admin/combos')
-      if (response.ok) {
-        const data = await response.json()
-        console.log('📦 Combos recibidos:', data)
-        setCombos(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar combos:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
-    fetchCombos()
+    let cancelled = false
+    async function loadCombos() {
+      try {
+        const response = await fetch('/api/admin/combos')
+        if (response.ok && !cancelled) setCombos(await response.json())
+      } catch (error) {
+        console.error('Error al cargar combos:', error)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    loadCombos()
+    return () => { cancelled = true }
   }, [])
 
   const filteredCombos = combos.filter(combo =>

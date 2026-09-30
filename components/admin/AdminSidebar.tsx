@@ -28,9 +28,11 @@ export default function AdminSidebar() {
   }, [])
 
   // Cerrar menú móvil cuando cambia la ruta
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname)
     setIsOpen(false)
-  }, [pathname])
+  }
 
   // Prevenir scroll del body cuando el menú móvil está abierto
   useEffect(() => {

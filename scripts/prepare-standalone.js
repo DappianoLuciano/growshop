@@ -1,4 +1,3 @@
-const https = require('https')
 const fs = require('fs')
 const path = require('path')
 const { execSync } = require('child_process')
@@ -61,7 +60,7 @@ try {
     env: { ...process.env, NODE_ENV: 'production' }
   })
   console.log('   ✓ Next.js compilado\n')
-} catch (error) {
+} catch {
   console.error('   ✗ Error compilando Next.js')
   process.exit(1)
 }

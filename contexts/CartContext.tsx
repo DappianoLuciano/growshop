@@ -41,11 +41,14 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
-  // Cargar carrito desde localStorage al montar
+  // Cargar carrito desde localStorage al montar.
+  // Va en un efecto a propósito: en el servidor no hay localStorage, y leerlo en el
+  // estado inicial haría que el HTML del servidor y el del navegador no coincidan.
   useEffect(() => {
     const savedCart = localStorage.getItem('cart')
     if (savedCart) {
       try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setItems(JSON.parse(savedCart))
       } catch (error) {
         console.error('Error al cargar carrito:', error)

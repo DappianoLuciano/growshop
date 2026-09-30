@@ -22,31 +22,30 @@ export default function EditarCategoriaPage({ params }: { params: Promise<{ id: 
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetchCategory()
-  }, [])
-
-  const fetchCategory = async () => {
-    try {
-      const response = await fetch(`/api/admin/categories/${resolvedParams.id}`)
-      if (response.ok) {
-        const category = await response.json()
-        setFormData({
-          name: category.name || '',
-          description: category.description || '',
-          color: category.color || '#10b981',
-          section: category.section || 'GROW',
-          imageFit: category.imageFit || 'COVER',
-        })
-      } else {
-        setError('Categoría no encontrada')
+    async function fetchCategory() {
+      try {
+        const response = await fetch(`/api/admin/categories/${resolvedParams.id}`)
+        if (response.ok) {
+          const category = await response.json()
+          setFormData({
+            name: category.name || '',
+            description: category.description || '',
+            color: category.color || '#10b981',
+            section: category.section || 'GROW',
+            imageFit: category.imageFit || 'COVER',
+          })
+        } else {
+          setError('Categoría no encontrada')
+        }
+      } catch (error) {
+        console.error('Error al cargar categoría:', error)
+        setError('Error al cargar la categoría')
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Error al cargar categoría:', error)
-      setError('Error al cargar la categoría')
-    } finally {
-      setLoading(false)
     }
-  }
+    fetchCategory()
+  }, [resolvedParams.id])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

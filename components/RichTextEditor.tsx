@@ -27,7 +27,6 @@ interface RichTextEditorProps {
 export default function RichTextEditor({
   value,
   onChange,
-  placeholder = 'Escribe aquí...',
   className = ''
 }: RichTextEditorProps) {
   const editor = useEditor({

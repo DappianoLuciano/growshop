@@ -94,10 +94,6 @@ export default function CheckoutPage() {
     ? totalPrice + selectedShipping.precio // Ya incluye el markup del 100%
     : totalPrice
 
-  const realShippingCost = selectedShipping && formData.shippingType === 'SHIPPING'
-    ? selectedShipping.precioReal || selectedShipping.precio / 2 // Costo real sin markup
-    : 0
-
   if (items.length === 0) {
     return null
   }

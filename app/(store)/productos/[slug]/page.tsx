@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import ProductImageCarousel from '@/components/store/ProductImageCarousel'
 import { useCart } from '@/contexts/CartContext'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 interface Product {
   id: string
@@ -46,7 +46,6 @@ const sectionBack: Record<string, { url: string; label: string }> = {
 
 function ProductoDetailContent({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
-  const router = useRouter()
   const searchParams = useSearchParams()
   const fromParam = searchParams.get('from')
   const { addItem } = useCart()
@@ -58,49 +57,49 @@ function ProductoDetailContent({ params }: { params: Promise<{ slug: string }> }
   const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([])
 
   useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const response = await fetch(`/api/products/${resolvedParams.slug}`)
+        if (response.ok) {
+          const data = await response.json()
+          setProduct(data)
+        } else {
+          setError('Producto no encontrado')
+        }
+      } catch (error) {
+        console.error('Error al cargar producto:', error)
+        setError('Error al cargar el producto')
+      } finally {
+        setLoading(false)
+      }
+    }
     fetchProduct()
-  }, [])
+  }, [resolvedParams.slug])
+
+  const productId = product?.id
+  const hasCategory = Boolean(product?.category?.id)
 
   useEffect(() => {
-    if (product?.category?.id) {
-      fetchSuggestedProducts()
-    }
-  }, [product])
-
-  const fetchProduct = async () => {
-    try {
-      const response = await fetch(`/api/products/${resolvedParams.slug}`)
-      if (response.ok) {
-        const data = await response.json()
-        setProduct(data)
-      } else {
-        setError('Producto no encontrado')
+    if (!productId || !hasCategory) return
+    let cancelled = false
+    async function fetchSuggestedProducts() {
+      try {
+        // Buscar todos los productos sin filtro de categoría
+        const response = await fetch('/api/products')
+        if (response.ok) {
+          const data = await response.json()
+          // Filtrar el producto actual y aleatorizar
+          const filtered = data.filter((p: Product) => p.id !== productId)
+          const shuffled = filtered.sort(() => Math.random() - 0.5)
+          if (!cancelled) setSuggestedProducts(shuffled.slice(0, 4))
+        }
+      } catch (error) {
+        console.error('Error al cargar productos sugeridos:', error)
       }
-    } catch (error) {
-      console.error('Error al cargar producto:', error)
-      setError('Error al cargar el producto')
-    } finally {
-      setLoading(false)
     }
-  }
-
-  const fetchSuggestedProducts = async () => {
-    if (!product) return
-
-    try {
-      // Buscar todos los productos sin filtro de categoría
-      const response = await fetch('/api/products')
-      if (response.ok) {
-        const data = await response.json()
-        // Filtrar el producto actual y aleatorizar
-        const filtered = data.filter((p: Product) => p.id !== product.id)
-        const shuffled = filtered.sort(() => Math.random() - 0.5)
-        setSuggestedProducts(shuffled.slice(0, 4))
-      }
-    } catch (error) {
-      console.error('Error al cargar productos sugeridos:', error)
-    }
-  }
+    fetchSuggestedProducts()
+    return () => { cancelled = true }
+  }, [productId, hasCategory])
 
   const getTotalStock = (product: Product) => {
     return product.variants.reduce((total, v) => total + v.stock, 0)

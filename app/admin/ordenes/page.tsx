@@ -49,33 +49,37 @@ export default function OrdenesAdminPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false)
 
-  const fetchOrders = async () => {
-    try {
-      const params = new URLSearchParams({ page: String(page), filter })
-      if (query) params.set('q', query)
-      const response = await fetch(`/api/orders?${params}`)
-      if (response.ok) {
-        const data: OrdersPage = await response.json()
-        // Si se borró el último pedido de la página, volver a la anterior
-        if (data.orders.length === 0 && data.page > 1) {
-          setPage(data.totalPages)
-          return
-        }
-        setOrders(data.orders)
-        setTotal(data.total)
-        setTotalPages(data.totalPages)
-      }
-    } catch (error) {
-      console.error('Error:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Subir reloadKey vuelve a pedir la página actual (después de aprobar o borrar)
+  const [reloadKey, setReloadKey] = useState(0)
+  const fetchOrders = () => setReloadKey(k => k + 1)
 
   useEffect(() => {
-    fetchOrders()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, filter, query])
+    let cancelled = false
+    async function loadOrders() {
+      try {
+        const params = new URLSearchParams({ page: String(page), filter })
+        if (query) params.set('q', query)
+        const response = await fetch(`/api/orders?${params}`)
+        if (response.ok && !cancelled) {
+          const data: OrdersPage = await response.json()
+          // Si se borró el último pedido de la página, volver a la anterior
+          if (data.orders.length === 0 && data.page > 1) {
+            setPage(data.totalPages)
+            return
+          }
+          setOrders(data.orders)
+          setTotal(data.total)
+          setTotalPages(data.totalPages)
+        }
+      } catch (error) {
+        console.error('Error:', error)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    loadOrders()
+    return () => { cancelled = true }
+  }, [page, filter, query, reloadKey])
 
   // Búsqueda: espera a que se deje de escribir
   useEffect(() => {

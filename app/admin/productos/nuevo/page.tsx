@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Save, Upload, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import RichTextEditor from '@/components/RichTextEditor'
 import { errorMessage } from '@/lib/utils/error-message'
@@ -57,20 +58,19 @@ export default function NuevoProductoPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch('/api/admin/categories')
+        if (response.ok) {
+          const data = await response.json()
+          setCategories(data)
+        }
+      } catch (error) {
+        console.error('Error al cargar categorías:', error)
+      }
+    }
     fetchCategories()
   }, [])
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch('/api/admin/categories')
-      if (response.ok) {
-        const data = await response.json()
-        setCategories(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar categorías:', error)
-    }
-  }
 
   const filteredCategories = categories.filter(c => c.section === formData.section)
   const selectedCategory = categories.find(c => c.id === formData.categoryId)
@@ -462,7 +462,7 @@ export default function NuevoProductoPage() {
                   <div className="grid grid-cols-2 gap-2">
                     {images.map((url, index) => (
                       <div key={index} className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden group">
-                        <img src={url} alt={`Imagen ${index + 1}`} className="w-full h-full object-cover" />
+                        <Image src={url} alt={`Imagen ${index + 1}`} fill sizes="200px" className="object-cover" />
                         <button
                           type="button"
                           onClick={() => removeImage(index)}

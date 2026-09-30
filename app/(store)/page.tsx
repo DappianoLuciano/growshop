@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import { ShoppingCart } from 'lucide-react'
 import ProductImageCarousel from '@/components/store/ProductImageCarousel'
 
@@ -185,16 +184,6 @@ export default function HomePage() {
   )
 }
 
-// Gradientes por slug de categoría
-const categoryGradients: { [key: string]: string } = {
-  'fertilizantes': 'from-blue-500 to-blue-600',
-  'iluminacion': 'from-yellow-500 to-orange-500',
-  'sustratos': 'from-green-600 to-green-700',
-  'macetas': 'from-amber-600 to-amber-700',
-  'ventilacion': 'from-cyan-500 to-cyan-600',
-  'medicion': 'from-purple-500 to-purple-600',
-}
-
 interface Category {
   id: string
   name: string
@@ -208,20 +197,19 @@ function BentoGridCategories() {
   const [categories, setCategories] = useState<Category[]>([])
 
   useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch('/api/admin/categories?section=GROW')
+        if (response.ok) {
+          const data = await response.json()
+          setCategories(data)
+        }
+      } catch (error) {
+        console.error('Error al cargar categorías:', error)
+      }
+    }
     fetchCategories()
   }, [])
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch('/api/admin/categories?section=GROW')
-      if (response.ok) {
-        const data = await response.json()
-        setCategories(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar categorías:', error)
-    }
-  }
 
   if (categories.length === 0) {
     return (
@@ -291,7 +279,6 @@ function GlassCard({
 }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
   const [isHovered, setIsHovered] = useState(false)
-  const cardRef = useState<HTMLDivElement | null>(null)
 
   const color = category.color || '#10b981'
 
@@ -453,22 +440,21 @@ function FeaturedProducts() {
   const mobileProductsPerView = 2
 
   useEffect(() => {
+    async function fetchFeaturedProducts() {
+      try {
+        const response = await fetch('/api/products/featured')
+        if (response.ok) {
+          const data = await response.json()
+          setProducts(data)
+        }
+      } catch (error) {
+        console.error('Error al cargar productos destacados:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
     fetchFeaturedProducts()
   }, [])
-
-  const fetchFeaturedProducts = async () => {
-    try {
-      const response = await fetch('/api/products/featured')
-      if (response.ok) {
-        const data = await response.json()
-        setProducts(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar productos destacados:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const getTotalStock = (product: LatestProduct) => {
     return product.variants.reduce((total, v) => total + v.stock, 0)
@@ -711,23 +697,22 @@ function OfferProducts() {
   const mobileProductsPerView = 2
 
   useEffect(() => {
+    async function fetchOfferProducts() {
+      try {
+        const response = await fetch('/api/products/offers')
+        if (response.ok) {
+          const data = await response.json()
+          // Limitar a 4 productos
+          setProducts(data.slice(0, 4))
+        }
+      } catch (error) {
+        console.error('Error al cargar ofertas:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
     fetchOfferProducts()
   }, [])
-
-  const fetchOfferProducts = async () => {
-    try {
-      const response = await fetch('/api/products/offers')
-      if (response.ok) {
-        const data = await response.json()
-        // Limitar a 4 productos
-        setProducts(data.slice(0, 4))
-      }
-    } catch (error) {
-      console.error('Error al cargar ofertas:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const getTotalStock = (product: LatestProduct) => {
     return product.variants.reduce((total, v) => total + v.stock, 0)
@@ -978,18 +963,3 @@ function OfferProducts() {
   )
 }
 
-function FeatureCardHero({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
-  return (
-    <div className="flex flex-col items-center text-center group">
-      <div className="text-green-400 mb-3 md:mb-4 transform group-hover:scale-110 transition-transform duration-300">
-        {icon}
-      </div>
-      <h3 className="text-lg md:text-xl font-black text-white mb-2 uppercase tracking-tight">
-        {title}
-      </h3>
-      <p className="text-sm md:text-base text-gray-300 leading-relaxed">
-        {description}
-      </p>
-    </div>
-  )
-}

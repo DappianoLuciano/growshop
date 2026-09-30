@@ -61,20 +61,19 @@ export default function NuevoComboPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const response = await fetch('/api/admin/products')
+        if (response.ok) {
+          const data = await response.json()
+          setProducts(data.filter((p: Product) => p.isActive))
+        }
+      } catch (error) {
+        console.error('Error al cargar productos:', error)
+      }
+    }
     fetchProducts()
   }, [])
-
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch('/api/admin/products')
-      if (response.ok) {
-        const data = await response.json()
-        setProducts(data.filter((p: Product) => p.isActive))
-      }
-    } catch (error) {
-      console.error('Error al cargar productos:', error)
-    }
-  }
 
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

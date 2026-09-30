@@ -5,7 +5,6 @@ import { ArrowLeft, ShoppingCart, Loader2, Check, Package } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useCart } from '@/contexts/CartContext'
-import { useRouter } from 'next/navigation'
 
 interface ComboProduct {
   id: string
@@ -48,7 +47,6 @@ interface SuggestedProduct {
 
 export default function ComboDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
-  const router = useRouter()
   const { addItem } = useCart()
   const [combo, setCombo] = useState<Combo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -57,39 +55,37 @@ export default function ComboDetailPage({ params }: { params: Promise<{ slug: st
   const [suggestedProducts, setSuggestedProducts] = useState<SuggestedProduct[]>([])
 
   useEffect(() => {
+    async function fetchCombo() {
+      try {
+        const response = await fetch(`/api/combos/${resolvedParams.slug}`)
+        if (response.ok) {
+          const data = await response.json()
+          setCombo(data)
+        } else {
+          setError('Combo no encontrado')
+        }
+      } catch (error) {
+        console.error('Error al cargar combo:', error)
+        setError('Error al cargar el combo')
+      } finally {
+        setLoading(false)
+      }
+    }
+    async function fetchSuggestedProducts() {
+      try {
+        const response = await fetch('/api/products')
+        if (response.ok) {
+          const data = await response.json()
+          const shuffled = [...data].sort(() => Math.random() - 0.5)
+          setSuggestedProducts(shuffled.slice(0, 4))
+        }
+      } catch (error) {
+        console.error('Error al cargar productos sugeridos:', error)
+      }
+    }
     fetchCombo()
     fetchSuggestedProducts()
-  }, [])
-
-  const fetchCombo = async () => {
-    try {
-      const response = await fetch(`/api/combos/${resolvedParams.slug}`)
-      if (response.ok) {
-        const data = await response.json()
-        setCombo(data)
-      } else {
-        setError('Combo no encontrado')
-      }
-    } catch (error) {
-      console.error('Error al cargar combo:', error)
-      setError('Error al cargar el combo')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchSuggestedProducts = async () => {
-    try {
-      const response = await fetch('/api/products')
-      if (response.ok) {
-        const data = await response.json()
-        const shuffled = [...data].sort(() => Math.random() - 0.5)
-        setSuggestedProducts(shuffled.slice(0, 4))
-      }
-    } catch (error) {
-      console.error('Error al cargar productos sugeridos:', error)
-    }
-  }
+  }, [resolvedParams.slug])
 
   const getTotalStock = (product: SuggestedProduct) => {
     return product.variants.reduce((total, v) => total + v.stock, 0)

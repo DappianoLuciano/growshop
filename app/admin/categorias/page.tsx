@@ -51,23 +51,22 @@ export default function CategoriasAdminPage() {
     : categories.filter((c) => c.section === sectionFilter)
 
   useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch('/api/admin/categories')
+        if (response.ok) {
+          const data = await response.json()
+          console.log('📦 Categorías:', data)
+          setCategories(data)
+        }
+      } catch (error) {
+        console.error('Error al cargar categorías:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
     fetchCategories()
   }, [])
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch('/api/admin/categories')
-      if (response.ok) {
-        const data = await response.json()
-        console.log('📦 Categorías:', data)
-        setCategories(data)
-      }
-    } catch (error) {
-      console.error('Error al cargar categorías:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const toggleCategory = async (categoryId: string) => {
     if (expandedCategory === categoryId) {

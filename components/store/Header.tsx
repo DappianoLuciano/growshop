@@ -26,7 +26,6 @@ export default function Header() {
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [showResults, setShowResults] = useState(false)
-  const [searching, setSearching] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
 
@@ -52,7 +51,6 @@ export default function Header() {
         return
       }
 
-      setSearching(true)
       try {
         const response = await fetch(`/api/products/search?q=${encodeURIComponent(searchTerm.trim())}`)
         if (response.ok) {
@@ -62,8 +60,6 @@ export default function Header() {
         }
       } catch (error) {
         console.error('Error en búsqueda:', error)
-      } finally {
-        setSearching(false)
       }
     }
 
@@ -188,10 +184,12 @@ export default function Header() {
                                     -{discount}%
                                   </div>
                                 )}
-                                <img
+                                <Image
                                   src={result.image}
                                   alt={result.name}
-                                  className="w-full h-full object-cover"
+                                  fill
+                                  sizes="48px"
+                                  className="object-cover"
                                 />
                               </div>
                             )}
