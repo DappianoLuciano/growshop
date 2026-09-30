@@ -20,6 +20,15 @@
 # production
 /build
 
+# electron
+/dist
+/dist-electron
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+
 # misc
 .DS_Store
 *.pem
@@ -42,6 +51,13 @@ next-env.d.ts
 
 /lib/generated/prisma
 /lib/generated/zod
+
+# builds de la app de escritorio
+/dist-installer
+/resources-standalone
+
+.vercel
+.env*
 
 .vercel
 .env*
