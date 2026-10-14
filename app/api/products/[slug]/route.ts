@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db/prisma'
+import { getActiveProductBySlug } from '@/lib/store/products'
 import { apiError } from '@/lib/api/errors'
 
 export async function GET(
@@ -9,28 +9,7 @@ export async function GET(
   try {
     const { slug } = await params
 
-    const product = await prisma.product.findUnique({
-      where: {
-        slug,
-        isActive: true,
-      },
-      include: {
-        variants: {
-          where: {
-            isActive: true,
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-        category: true,
-        images: {
-          orderBy: {
-            order: 'asc',
-          },
-        },
-      },
-    })
+    const product = await getActiveProductBySlug(slug)
 
     if (!product) {
       return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 })
