@@ -1,34 +1,10 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db/prisma'
+import { listCombos } from '@/lib/store/products'
 import { apiError } from '@/lib/api/errors'
 
 export async function GET() {
   try {
-    const combos = await prisma.combo.findMany({
-      where: {
-        isActive: true
-      },
-      include: {
-        products: {
-          include: {
-            variant: {
-              include: {
-                product: {
-                  include: {
-                    images: true,
-                    category: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      orderBy: [
-        { isFeatured: 'desc' },
-        { createdAt: 'desc' }
-      ]
-    })
+    const combos = await listCombos()
 
     return NextResponse.json(combos)
   } catch (error) {

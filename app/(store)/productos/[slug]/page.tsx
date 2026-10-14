@@ -2,14 +2,12 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import ProductDetail, { type Product } from '@/components/store/ProductDetail'
 import { getActiveProductBySlug, getSuggestedProducts } from '@/lib/store/products'
+import { toPlain, toMetaDescription } from '@/lib/store/serialize'
 
 type Props = {
   params: Promise<{ slug: string }>
   searchParams: Promise<{ from?: string }>
 }
-
-// Mismo formato que devolvía /api/products/[slug] (Decimal -> string, Date -> ISO)
-const toPlain = <T,>(data: unknown) => JSON.parse(JSON.stringify(data)) as T
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
@@ -18,8 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!product) return { title: 'Producto no encontrado' }
 
   const description =
-    product.description?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) ||
-    `Comprá ${product.name} en AgroGrow. Envíos a todo el país.`
+    toMetaDescription(product.description) || `Comprá ${product.name} en AgroGrow. Envíos a todo el país.`
   const image = product.images[0]?.url
 
   return {

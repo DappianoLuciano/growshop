@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Categorías',
+  description: 'Explorá nuestras categorías: fertilizantes, iluminación, sustratos, macetas, ventilación y medición.',
+  alternates: { canonical: '/categorias' },
+}
 
 const categories = [
   {

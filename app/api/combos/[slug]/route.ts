@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db/prisma'
+import { getActiveComboBySlug } from '@/lib/store/products'
 import { apiError } from '@/lib/api/errors'
 
 export async function GET(
@@ -9,28 +9,7 @@ export async function GET(
   try {
     const { slug } = await params
 
-    const combo = await prisma.combo.findUnique({
-      where: {
-        slug,
-        isActive: true
-      },
-      include: {
-        products: {
-          include: {
-            variant: {
-              include: {
-                product: {
-                  include: {
-                    images: true,
-                    category: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    })
+    const combo = await getActiveComboBySlug(slug)
 
     if (!combo) {
       return NextResponse.json(

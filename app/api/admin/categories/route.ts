@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db/prisma'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/require-admin'
 import { apiError } from '@/lib/api/errors'
-import { CategorySection } from '@/lib/generated/prisma'
+import { listCategories } from '@/lib/store/products'
 
 export async function POST(request: NextRequest) {
   // Verificar autenticación - solo admin puede crear
@@ -77,21 +77,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const section = searchParams.get('section')
 
-    const validSections: string[] = Object.values(CategorySection)
-
-    const categories = await prisma.category.findMany({
-      where: section && validSections.includes(section) ? { section: section as CategorySection } : undefined,
-      include: {
-        _count: {
-          select: {
-            products: true
-          }
-        }
-      },
-      orderBy: {
-        name: 'asc'
-      }
-    })
+    const categories = await listCategories(section)
 
     return NextResponse.json(categories)
   } catch (error) {

@@ -1,31 +1,10 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db/prisma'
+import { listFeaturedProducts } from '@/lib/store/products'
 import { apiError } from '@/lib/api/errors'
 
 export async function GET() {
   try {
-    const products = await prisma.product.findMany({
-      where: {
-        isActive: true,
-        isFeatured: true,
-      },
-      include: {
-        images: {
-          orderBy: {
-            order: 'asc',
-          },
-        },
-        category: true,
-        variants: {
-          where: {
-            isActive: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+    const products = await listFeaturedProducts()
 
     return NextResponse.json(products)
   } catch (error) {
